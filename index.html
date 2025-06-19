@@ -1,133 +1,122 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PassForge — Password Generator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #1f1c2c, #928dab);
-      color: #fff;
       margin: 0;
       padding: 0;
+      background: linear-gradient(135deg, #1f1c2c, #928dab);
+      color: #fff;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
     }
+    #container {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      max-width: 400px;
+      width: 90%;
+    }
     h1 {
-      font-size: 2.5rem;
       margin-bottom: 0.5rem;
     }
     p {
       margin-top: 0;
-      font-size: 1.1rem;
-      color: #e0e0e0;
-    }
-    #container {
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
+      color: #ccc;
     }
     #password {
       font-size: 1.4rem;
-      margin: 20px 0;
-      padding: 15px;
-      background: #2e2e3a;
-      border: none;
-      border-radius: 8px;
+      background-color: #2e2e3e;
+      padding: 0.8rem;
+      border-radius: 10px;
+      margin: 1rem 0;
       color: #00ffcc;
       word-break: break-all;
     }
     button {
-      padding: 12px 24px;
-      margin: 8px;
+      padding: 10px 20px;
+      margin: 5px;
       font-size: 1rem;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s ease;
     }
-    .generate {
-      background-color: #00c853;
-      color: white;
-    }
-    .generate:hover {
-      background-color: #00e676;
-    }
-    .copy {
-      background-color: #2979ff;
-      color: white;
-    }
-    .copy:hover {
-      background-color: #5393ff;
-    }
+    .generate { background-color: #4caf50; color: white; }
+    .generate:hover { background-color: #43a047; }
+    .copy { background-color: #2196f3; color: white; }
+    .copy:hover { background-color: #1976d2; }
     .lang-toggle {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: #444;
-      color: white;
-      border: none;
-      padding: 8px 12px;
+      background-color: #444;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 0.9rem;
       border-radius: 6px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <button class="lang-toggle" onclick="toggleLang()">RU</button>
+  <div class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="lang-label">RU</span></div>
+
   <div id="container">
     <h1 id="title">PassForge</h1>
-    <p id="subtitle">Create strong, secure passwords with one click</p>
+    <p id="description">Generate strong, secure passwords with one click</p>
     <div id="password">Click "Generate"</div>
-    <button class="generate" onclick="generatePassword()" id="generateBtn">Generate Password</button>
-    <button class="copy" onclick="copyPassword()" id="copyBtn">Copy</button>
+    <button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
+    <button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
   </div>
 
   <script>
-    let lang = 'en';
-
     const translations = {
       en: {
-        subtitle: 'Create strong, secure passwords with one click',
-        generate: 'Generate Password',
-        copy: 'Copy',
-        alert: 'Password copied to clipboard!',
-        placeholder: 'Click "Generate"',
-        toggle: 'RU'
+        title: "PassForge",
+        description: "Generate strong, secure passwords with one click",
+        generate: "Generate",
+        copy: "Copy",
+        defaultPassword: 'Click "Generate"',
+        copied: "Password copied to clipboard!",
+        langLabel: "RU"
       },
       ru: {
-        subtitle: 'Создавайте надёжные пароли одним нажатием',
-        generate: 'Сгенерировать пароль',
-        copy: 'Скопировать',
-        alert: 'Пароль скопирован в буфер обмена!',
-        placeholder: 'Нажмите "Сгенерировать"',
-        toggle: 'EN'
+        title: "PassForge",
+        description: "Создавай крепкие, надёжные пароли одним нажатием",
+        generate: "Сгенерировать",
+        copy: "Скопировать",
+        defaultPassword: 'Нажмите "Сгенерировать"',
+        copied: "Пароль скопирован в буфер обмена!",
+        langLabel: "EN"
       }
     };
 
-    function updateLanguage() {
-      document.getElementById('subtitle').textContent = translations[lang].subtitle;
-      document.getElementById('generateBtn').textContent = translations[lang].generate;
-      document.getElementById('copyBtn').textContent = translations[lang].copy;
-      document.getElementById('password').textContent = translations[lang].placeholder;
-      document.querySelector('.lang-toggle').textContent = translations[lang].toggle;
+    let currentLang = localStorage.getItem('lang') || 'en';
+
+    function applyLanguage(lang) {
+      document.getElementById("title").textContent = translations[lang].title;
+      document.getElementById("description").textContent = translations[lang].description;
+      document.getElementById("generate-btn").textContent = translations[lang].generate;
+      document.getElementById("copy-btn").textContent = translations[lang].copy;
+      document.getElementById("password").textContent = translations[lang].defaultPassword;
+      document.getElementById("lang-label").textContent = translations[lang].langLabel;
     }
 
-    function toggleLang() {
-      lang = lang === 'en' ? 'ru' : 'en';
-      updateLanguage();
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'ru' : 'en';
+      localStorage.setItem('lang', currentLang);
+      applyLanguage(currentLang);
     }
 
     function generatePassword() {
@@ -143,11 +132,11 @@
     function copyPassword() {
       const passwordText = document.getElementById("password").textContent;
       navigator.clipboard.writeText(passwordText).then(() => {
-        alert(translations[lang].alert);
+        alert(translations[currentLang].copied);
       });
     }
 
-    updateLanguage();
+    applyLanguage(currentLang);
   </script>
 </body>
 </html>
