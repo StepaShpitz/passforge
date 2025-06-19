@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PassForge — Генератор Паролей</title>
+  <title>PassForge — Password Generator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * {
@@ -72,18 +72,64 @@
     .copy:hover {
       background-color: #5393ff;
     }
+    .lang-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <button class="lang-toggle" onclick="toggleLang()">RU</button>
   <div id="container">
-    <h1>PassForge</h1>
-    <p>Создавай крепкие, надёжные пароли одним нажатием</p>
-    <div id="password">Нажмите "Сгенерировать"</div>
-    <button class="generate" onclick="generatePassword()">Сгенерировать пароль</button>
-    <button class="copy" onclick="copyPassword()">Скопировать</button>
+    <h1 id="title">PassForge</h1>
+    <p id="subtitle">Create strong, secure passwords with one click</p>
+    <div id="password">Click "Generate"</div>
+    <button class="generate" onclick="generatePassword()" id="generateBtn">Generate Password</button>
+    <button class="copy" onclick="copyPassword()" id="copyBtn">Copy</button>
   </div>
 
   <script>
+    let lang = 'en';
+
+    const translations = {
+      en: {
+        subtitle: 'Create strong, secure passwords with one click',
+        generate: 'Generate Password',
+        copy: 'Copy',
+        alert: 'Password copied to clipboard!',
+        placeholder: 'Click "Generate"',
+        toggle: 'RU'
+      },
+      ru: {
+        subtitle: 'Создавайте надёжные пароли одним нажатием',
+        generate: 'Сгенерировать пароль',
+        copy: 'Скопировать',
+        alert: 'Пароль скопирован в буфер обмена!',
+        placeholder: 'Нажмите "Сгенерировать"',
+        toggle: 'EN'
+      }
+    };
+
+    function updateLanguage() {
+      document.getElementById('subtitle').textContent = translations[lang].subtitle;
+      document.getElementById('generateBtn').textContent = translations[lang].generate;
+      document.getElementById('copyBtn').textContent = translations[lang].copy;
+      document.getElementById('password').textContent = translations[lang].placeholder;
+      document.querySelector('.lang-toggle').textContent = translations[lang].toggle;
+    }
+
+    function toggleLang() {
+      lang = lang === 'en' ? 'ru' : 'en';
+      updateLanguage();
+    }
+
     function generatePassword() {
       const length = 16;
       const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]<>?";
@@ -97,9 +143,11 @@
     function copyPassword() {
       const passwordText = document.getElementById("password").textContent;
       navigator.clipboard.writeText(passwordText).then(() => {
-        alert("Пароль скопирован в буфер обмена!");
+        alert(translations[lang].alert);
       });
     }
+
+    updateLanguage();
   </script>
 </body>
 </html>
