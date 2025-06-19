@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PassForge — Генератор Паролей</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #1e1e2f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    p {
+      margin-top: 0;
+      font-size: 1rem;
+      color: #ccc;
+    }
+    #password {
+      font-size: 1.5rem;
+      margin: 20px 0;
+      padding: 10px;
+      background: #2d2d3d;
+      border: 1px solid #444;
+      border-radius: 5px;
+      width: 320px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .generate {
+      background-color: #4caf50;
+      color: white;
+    }
+    .copy {
+      background-color: #2196f3;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>PassForge</h1>
+  <p>Создавай крепкие, надёжные пароли одним нажатием</p>
+  <div id="password">Нажмите "Сгенерировать"</div>
+  <button class="generate" onclick="generatePassword()">Сгенерировать пароль</button>
+  <button class="copy" onclick="copyPassword()">Скопировать</button>
+
+  <script>
+    function generatePassword() {
+      const length = 16;
+      const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+{}[]<>?";
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+      }
+      document.getElementById("password").textContent = password;
+    }
+
+    function copyPassword() {
+      const passwordText = document.getElementById("password").textContent;
+      navigator.clipboard.writeText(passwordText).then(() => {
+        alert("Пароль скопирован в буфер обмена!");
+      });
+    }
+  </script>
+</body>
+</html>
