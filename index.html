@@ -15,10 +15,10 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PassForge — Password Generator</title>
+  <title>Free Password Generator — Strong & Secure | PassForge</title>
 
   <!-- ✅ SEO basics -->
-  <meta name="description" content="Generate strong, secure, customizable passwords instantly. Free, fast and private.">
+  <meta name="description" content="Generate strong, secure passwords instantly with PassForge. Free tool with customizable options. No ads, no tracking.">
   <meta name="keywords" content="password generator, secure passwords, passforge, online password tool, strong passwords">
   <meta name="author" content="PassForge">
   <meta name="robots" content="index, follow">
@@ -35,226 +35,37 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PassForge — Password Generator</title>
+  <title>Free Password Generator — Strong & Secure | PassForge</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #4a69bd;
-      --primary-hover: #3c5aa4;
-      --secondary: #778ca3;
-      --secondary-hover: #5f6f80;
-      --bg: #eef1f5;
-      --card-bg: #ffffff;
-      --text-main: #333;
-      --accent: #00b894;
-    }
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      background-color: var(--bg);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    #container {
-      background: var(--card-bg);
-      padding: 2rem 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      width: 420px;
-      max-width: 90%;
-      box-sizing: border-box;
-      text-align: center;
-    }
-    h1 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.8rem;
-      font-weight: 600;
-    }
-    p {
-      margin-top: 0;
-      color: #555;
-      font-size: 0.95rem;
-    }
-    #password {
-      font-size: 1.2rem;
-      background-color: #f1f2f6;
-      padding: 0.8rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      color: var(--accent);
-      word-break: break-all;
-      min-height: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    button {
-      padding: 10px 24px;
-      margin: 6px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.25s ease;
-      width: 160px; /* fixed width to prevent shift */
-    }
-    .generate { background-color: var(--primary); color: #fff; }
-    .generate:hover { background-color: var(--primary-hover); }
-    .copy { background-color: var(--secondary); color: #fff; }
-    .copy:hover { background-color: var(--secondary-hover); }
-    .lang-toggle {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background-color: var(--secondary);
-      color: #fff;
-      padding: 6px 14px;
-      font-size: 0.85rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.25s ease;
-      user-select: none;
-    }
-    .lang-toggle:hover {
-      background-color: var(--secondary-hover);
-    }
-    /* Controls */
-    .controls {
-      text-align: left;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-    }
-    .controls label {
-      display: flex;
-      align-items: center;
-      margin: 6px 0;
-    }
-    .controls input[type="range"] {
-      width: 100%;
-    }
-    .range-value {
-      font-weight: 600;
-      margin-left: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="lang-label">RU</span></div>
 
-  <div id="container">
-    
-   <img src="logo_clean_bg.png" alt="PassForge Logo" style="max-width: 140px; margin-bottom: 1rem;">
-<h1 id="title">PassForge</h1>
-    <p id="description">Generate strong, secure passwords with one click</p>
-
-    <div class="controls">
-      <label id="length-label">
-        Length: <span class="range-value" id="length-value">16</span>
-      </label>
-      <input type="range" id="length" min="4" max="64" value="16" oninput="updateLengthDisplay()">
-      <label><input type="checkbox" id="uppercase" checked> <span id="label-uppercase">Uppercase Letters</span></label>
-      <label><input type="checkbox" id="numbers" checked> <span id="label-numbers">Numbers</span></label>
-      <label><input type="checkbox" id="symbols" checked> <span id="label-symbols">Symbols</span></label>
-    </div>
-
-    <div id="password">Click "Generate"</div>
-    <button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
-    <button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
-  </div>
-
-  <script>
-    const translations = {
-      en: {
-        title: "PassForge",
-        description: "Generate strong, secure passwords with one click",
-        generate: "Generate",
-        copy: "Copy",
-        defaultPassword: 'Click "Generate"',
-        copied: "Password copied to clipboard!",
-        langLabel: "RU",
-        length: "Length",
-        uppercase: "Uppercase Letters",
-        numbers: "Numbers",
-        symbols: "Symbols"
-      },
-      ru: {
-        title: "PassForge",
-        description: "Создавай крепкие, надёжные пароли одним нажатием",
-        generate: "Сгенерировать",
-        copy: "Скопировать",
-        defaultPassword: 'Нажмите "Сгенерировать"',
-        copied: "Пароль скопирован в буфер обмена!",
-        langLabel: "EN",
-        length: "Длина",
-        uppercase: "Заглавные буквы",
-        numbers: "Цифры",
-        symbols: "Символы"
-      }
-    };
-
-    let currentLang = localStorage.getItem('lang') || 'en';
-
-    function applyLanguage(lang) {
-      const t = translations[lang];
-      document.getElementById("title").textContent = t.title;
-      document.getElementById("description").textContent = t.description;
-      document.getElementById("generate-btn").textContent = t.generate;
-      document.getElementById("copy-btn").textContent = t.copy;
-      document.getElementById("password").textContent = t.defaultPassword;
-      document.getElementById("lang-label").textContent = t.langLabel;
-
-      document.getElementById("length-label").childNodes[0].nodeValue = t.length + ": ";
-      document.getElementById("label-uppercase").textContent = t.uppercase;
-      document.getElementById("label-numbers").textContent = t.numbers;
-      document.getElementById("label-symbols").textContent = t.symbols;
+  <!-- ✅ Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "PassForge",
+    "url": "https://passforge.net",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript",
+    "description": "Generate secure passwords instantly with adjustable settings.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0.00",
+      "priceCurrency": "USD"
     }
-
-    function toggleLanguage() {
-      currentLang = currentLang === 'en' ? 'ru' : 'en';
-      localStorage.setItem('lang', currentLang);
-      applyLanguage(currentLang);
-    }
-
-    function updateLengthDisplay() {
-      document.getElementById("length-value").textContent = document.getElementById("length").value;
-    }
-
-    function generatePassword() {
-      const length = parseInt(document.getElementById("length").value, 10);
-      const includeUppercase = document.getElementById("uppercase").checked;
-      const includeNumbers = document.getElementById("numbers").checked;
-      const includeSymbols = document.getElementById("symbols").checked;
-
-      let charset = "abcdefghijklmnopqrstuvwxyz";
-      if (includeUppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      if (includeNumbers) charset += "0123456789";
-      if (includeSymbols) charset += "!@#$%^&*()_+{}[]<>?";
-
-      if (charset === "") {
-        alert("Please select at least one character set!");
-        return;
-      }
-
-      let password = "";
-      for (let i = 0; i < length; i++) {
-        password += charset.charAt(Math.floor(Math.random() * charset.length));
-      }
-      document.getElementById("password").textContent = password;
-    }
-
-    function copyPassword() {
-      const passwordText = document.getElementById("password").textContent;
-      navigator.clipboard.writeText(passwordText).then(() => {
-        alert(translations[currentLang].copied);
-      });
-    }
-
-    /* Init */
-    updateLengthDisplay();
-    applyLanguage(currentLang);
+  }
   </script>
+</head>
+
+<body>
+  <div id="container">
+    <img src="logo_clean_bg.png" alt="PassForge Logo" style="max-width: 140px; margin-bottom: 1rem;">
+    <h1 id="title">PassForge</h1>
+    <h2 style="margin-top: 0.5rem; font-size: 1.1rem;">Online Password Generator</h2>
+    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.2rem;">
+      Create secure passwords in seconds with adjustable length, symbols, and numbers.
+    </p>
+  </div>
 </body>
 </html>
