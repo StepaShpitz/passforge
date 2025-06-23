@@ -1,89 +1,73 @@
-const translations = {
-      en: {
-        title: "PassForge",
-        description: "Generate strong, secure passwords with one click",
-        generate: "Generate",
-        copy: "Copy",
-        defaultPassword: 'Click "Generate"',
-        copied: "Password copied to clipboard!",
-        langLabel: "RU",
-        length: "Length",
-        uppercase: "Uppercase Letters",
-        numbers: "Numbers",
-        symbols: "Symbols"
-      },
-      ru: {
-        title: "PassForge",
-        description: "Создавай крепкие, надёжные пароли одним нажатием",
-        generate: "Сгенерировать",
-        copy: "Скопировать",
-        defaultPassword: 'Нажмите "Сгенерировать"',
-        copied: "Пароль скопирован в буфер обмена!",
-        langLabel: "EN",
-        length: "Длина",
-        uppercase: "Заглавные буквы",
-        numbers: "Цифры",
-        symbols: "Символы"
-      }
-    };
 
-    let currentLang = localStorage.getItem('lang') || 'en';
+function generatePassword() {
+  const length = parseInt(document.getElementById("length").value);
+  const useUppercase = document.getElementById("uppercase").checked;
+  const useNumbers = document.getElementById("numbers").checked;
+  const useSymbols = document.getElementById("symbols").checked;
 
-    function applyLanguage(lang) {
-      const t = translations[lang];
-      document.getElementById("title").textContent = t.title;
-      document.getElementById("description").textContent = t.description;
-      document.getElementById("generate-btn").textContent = t.generate;
-      document.getElementById("copy-btn").textContent = t.copy;
-      document.getElementById("password").textContent = t.defaultPassword;
-      document.getElementById("lang-label").textContent = t.langLabel;
+  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numberChars = "0123456789";
+  const symbolChars = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
 
-      document.getElementById("length-label").childNodes[0].nodeValue = t.length + ": ";
-      document.getElementById("label-uppercase").textContent = t.uppercase;
-      document.getElementById("label-numbers").textContent = t.numbers;
-      document.getElementById("label-symbols").textContent = t.symbols;
-    }
+  let allChars = lowercaseChars;
+  if (useUppercase) allChars += uppercaseChars;
+  if (useNumbers) allChars += numberChars;
+  if (useSymbols) allChars += symbolChars;
 
-    function toggleLanguage() {
-      currentLang = currentLang === 'en' ? 'ru' : 'en';
-      localStorage.setItem('lang', currentLang);
-      applyLanguage(currentLang);
-    }
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * allChars.length);
+    password += allChars[randomIndex];
+  }
 
-    function updateLengthDisplay() {
-      document.getElementById("length-value").textContent = document.getElementById("length").value;
-    }
+  document.getElementById("password").textContent = password;
+  updateSliderBackground(); // Подсветка шкалы после генерации
+}
 
-    function generatePassword() {
-      const length = parseInt(document.getElementById("length").value, 10);
-      const includeUppercase = document.getElementById("uppercase").checked;
-      const includeNumbers = document.getElementById("numbers").checked;
-      const includeSymbols = document.getElementById("symbols").checked;
+function copyPassword() {
+  const passwordText = document.getElementById("password").textContent;
+  navigator.clipboard.writeText(passwordText).then(() => {
+    alert("Пароль скопирован в буфер обмена!");
+  });
+}
 
-      let charset = "abcdefghijklmnopqrstuvwxyz";
-      if (includeUppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      if (includeNumbers) charset += "0123456789";
-      if (includeSymbols) charset += "!@#$%^&*()_+{}[]<>?";
+function updateLengthDisplay() {
+  document.getElementById("length-value").textContent = document.getElementById("length").value;
+}
 
-      if (charset === "") {
-        alert("Please select at least one character set!");
-        return;
-      }
+// === Подсветка шкалы слайдера по значению длины ===
+function updateSliderBackground() {
+  const slider = document.getElementById("length");
+  const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  slider.style.background = `linear-gradient(to right, #4a90e2 0%, #4a90e2 ${value}%, #ccc ${value}%, #ccc 100%)`;
+}
 
-      let password = "";
-      for (let i = 0; i < length; i++) {
-        password += charset.charAt(Math.floor(Math.random() * charset.length));
-      }
-      document.getElementById("password").textContent = password;
-    }
+document.getElementById("length").addEventListener("input", function () {
+  updateLengthDisplay();
+  updateSliderBackground();
+});
 
-    function copyPassword() {
-      const passwordText = document.getElementById("password").textContent;
-      navigator.clipboard.writeText(passwordText).then(() => {
-        alert(translations[currentLang].copied);
-      });
-    }
+/* Init */
+updateLengthDisplay();
+updateSliderBackground();
 
-    /* Init */
-    updateLengthDisplay();
-    applyLanguage(currentLang);
+const range = document.getElementById('length');
+function updateRangeProgress() {
+  const val = (range.value - range.min) / (range.max - range.min) * 100;
+  range.style.setProperty('--range-progress', `${val}%`);
+}
+range.addEventListener('input', updateRangeProgress);
+updateRangeProgress();
+
+const slider = document.getElementById('lengthSlider');
+function updateSliderBackground(slider) {
+  const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  slider.style.setProperty('--slider-fill', `${value}%`);
+}
+slider.addEventListener('input', () => updateSliderBackground(slider));
+updateSliderBackground(slider);
+
+
+
+

@@ -107,49 +107,41 @@
 
 
 /* 🎚️ Минималистичный улучшенный ползунок — фиксированный */
-input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #0066FF 50%, #ccc 0%);
-  border-radius: 1px;
-  outline: none;
-  margin: 8px 0;
-  transition: background 0.3s ease;
+/* Ползунок и трек */
+/* ——— Тонкий трек + тонкий бегунок, выровненный по центру ——— */
+input[type="range"]{
+  -webkit-appearance:none;
+  width:100%;
+  height:2px;                          /* ➊ Тонкая шкала */
+  background:linear-gradient(
+      to right,
+      #4a90e2 0%,                      /* синий слева … */
+      #4a90e2 var(--fill,50%),         /* … до бегунка  */
+      #ccc     var(--fill,50%), #ccc 100%);  /* серый справа */
+  border-radius:1px;
+  outline:none;
 }
 
-input[type="range"]:not(:active)::-webkit-slider-thumb {
-  box-shadow: none;
+/* Chrome / Edge бегунок */
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  height:12px; width:12px;             /* ➋ Тонкий круг */
+  border:2px solid #4a90e2;
+  border-radius:50%;
+  background:#fff;
+  margin-top:0px;                     /* ➌ Центр по треку */
+  cursor:pointer;
+  transition:box-shadow .2s;
 }
 
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  height: 14px;
-  width: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #0066FF;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: -6px;
+/* Glоw только при перетягивании */
+input[type="range"]:active::-webkit-slider-thumb{
+  box-shadow:0 0 0 3px rgba(74,144,226,.35);
 }
 
-input[type="range"]::-webkit-slider-thumb:active {
-  box-shadow: 0 0 0 6px rgba(0, 102, 255, 0.3);
+/* Firefox */
+input[type="range"]::-moz-range-track   {height:2px;background:#ccc;border-radius:1px;}
+input[type="range"]::-moz-range-progress{height:2px;background:#4a90e2;border-radius:1px;}
+input[type="range"]::-moz-range-thumb   {
+  height:12px;width:12px;border:2px solid #4a90e2;background:#fff;border-radius:50%;cursor:pointer;
 }
-
-input[type="range"]::-moz-range-track {
-  height: 2px;
-  background: linear-gradient(to right, #0066FF 50%, #ccc 0%);
-  border-radius: 1px;
-}
-
-input[type="range"]::-moz-range-thumb {
-  height: 14px;
-  width: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #0066FF;
-  cursor: pointer;
-}
-
