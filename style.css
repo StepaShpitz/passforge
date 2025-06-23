@@ -199,17 +199,17 @@ input[type="range"]::-moz-range-thumb   {
   flex-grow: 1;
 }
 
+
 .range-value-box {
   display: inline-block;
-  padding: 4px 12px;
-  font-weight: 500;
+  padding: 2px 8px;
   border: 1px solid #ccc;
-  border-radius: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  min-width: 36px;
+  text-align: center;
   background-color: #fff;
-  font-size: 16px;
-  line-height: 1.2;
-  margin-left: 8px;
+  color: #333;
+  margin-left: 6px;
 }
-
-
 
