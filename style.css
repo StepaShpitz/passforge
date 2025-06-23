@@ -1,0 +1,101 @@
+:root {
+      --primary: #4a69bd;
+      --primary-hover: #3c5aa4;
+      --secondary: #778ca3;
+      --secondary-hover: #5f6f80;
+      --bg: #eef1f5;
+      --card-bg: #ffffff;
+      --text-main: #333;
+      --accent: #00b894;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #container {
+      background: var(--card-bg);
+      padding: 2rem 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      width: 420px;
+      max-width: 90%;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+    }
+    p {
+      margin-top: 0;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    #password {
+      font-size: 1.2rem;
+      background-color: #f1f2f6;
+      padding: 0.8rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      color: var(--accent);
+      word-break: break-all;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 24px;
+      margin: 6px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      width: 160px; /* fixed width to prevent shift */
+    }
+    .generate { background-color: var(--primary); color: #fff; }
+    .generate:hover { background-color: var(--primary-hover); }
+    .copy { background-color: var(--secondary); color: #fff; }
+    .copy:hover { background-color: var(--secondary-hover); }
+    .lang-toggle {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background-color: var(--secondary);
+      color: #fff;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      user-select: none;
+    }
+    .lang-toggle:hover {
+      background-color: var(--secondary-hover);
+    }
+    /* Controls */
+    .controls {
+      text-align: left;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      margin: 6px 0;
+    }
+    .controls input[type="range"] {
+      width: 100%;
+    }
+    .range-value {
+      font-weight: 600;
+      margin-left: 8px;
+    }
