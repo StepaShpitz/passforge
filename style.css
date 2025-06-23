@@ -145,3 +145,56 @@ input[type="range"]::-moz-range-progress{height:2px;background:#4a90e2;border-ra
 input[type="range"]::-moz-range-thumb   {
   height:12px;width:12px;border:2px solid #4a90e2;background:#fff;border-radius:50%;cursor:pointer;
 }
+
+
+/* Переключатель-чекбокс (toggle switch) */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* Скрываем стандартный checkbox */
+.switch input {
+  display: none;
+}
+
+/* Внешний вид слайдера */
+.switch .slider {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  background: #ccc;
+  border-radius: 50px;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+/* Кружок внутри */
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* Когда включено */
+.switch input:checked + .slider {
+  background: var(--primary);
+}
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* Подпись справа */
+.switch .label-text {
+  flex-grow: 1;
+}
