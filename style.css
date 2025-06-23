@@ -198,3 +198,18 @@ input[type="range"]::-moz-range-thumb   {
 .switch .label-text {
   flex-grow: 1;
 }
+
+.range-value-box {
+  display: inline-block;
+  padding: 4px 12px;
+  font-weight: 500;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: #fff;
+  font-size: 16px;
+  line-height: 1.2;
+  margin-left: 8px;
+}
+
+
+
