@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <!-- 🔹 БЛОК 1: SEO и мета-теги -->
 <!-- Google tag (gtag.js) -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-ESG8VKVJJ3"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ESG8VKVJJ3"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -13,13 +11,12 @@
   gtag('config', 'G-ESG8VKVJJ3');
 </script>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PassForge – Secure Online Password Generator</title>
-<meta content="Generate strong, secure, customizable passwords instantly. Free, fast and private." name="description"/>
-<!-- ✅ SEO basics -->
-<meta content="password generator, secure passwords, passforge, online password tool, strong passwords" name="keywords"/>
-<meta content="PassForge" name="author"/>
-<meta content="index, follow" name="robots"/>
+<meta name="description" content="Generate strong, secure, customizable passwords instantly. Free, fast and private."/>
+<meta name="keywords" content="password generator, secure passwords, passforge, online password tool, strong passwords"/>
+<meta name="author" content="PassForge"/>
+<meta name="robots" content="index, follow"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -48,10 +45,6 @@
   "datePublished": "2025-06-23"
 }
 </script>
-<!-- ✅ Favicon -->
-<link href="favicon.ico" rel="icon" type="image/x-icon"/>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
-<!-- 🔹 БЛОК 2: CSS стили -->
 
 <script type="application/ld+json">
 {
@@ -85,44 +78,55 @@
   ]
 }
 </script>
-<link href="style.css" rel="stylesheet"/></head>
+<!-- ✅ Favicon -->
+<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
 <body>
 <!-- 🔹 БЛОК 3: HTML структура страницы -->
 <div class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="lang-label">RU</span></div>
 <div id="container">
-<img alt="PassForge Logo" src="logo_clean_bg.png" style="max-width: 140px; margin-bottom: 1rem;"/>
+<img src="logo_clean_bg.png" alt="PassForge Logo" style="max-width: 140px; margin-bottom: 1rem;"/>
 <h1 id="title">PassForge</h1>
 <p id="description">Generate strong, secure passwords with one click</p>
+
 <div class="controls">
-<label id="length-label">
-        Length: <span class="range-value-box" id="length-value">16</span>
-</label>
-<input id="length" max="64" min="4" oninput="updateLengthDisplay()" type="range" value="16"/>
-<label class="switch">
-  <input type="checkbox" id="uppercase" checked>
-  <span class="slider"></span>
-  <span class="label-text" id="label-uppercase">Uppercase Letters</span>
-</label>
+  <label id="length-label">
+    Length: <span class="range-value-box" id="length-value">16</span>
+  </label>
+  <input id="length" type="range" min="4" max="64" value="16" />
 
-<label class="switch">
-  <input type="checkbox" id="numbers" checked>
-  <span class="slider"></span>
-  <span class="label-text" id="label-numbers">Numbers</span>
-</label>
+  <label class="switch">
+    <input type="checkbox" id="uppercase" checked />
+    <span class="slider"></span>
+    <span class="label-text" id="label-uppercase">Uppercase Letters</span>
+  </label>
 
-<label class="switch">
-  <input type="checkbox" id="symbols" checked>
-  <span class="slider"></span>
-  <span class="label-text" id="label-symbols">Symbols</span>
-</label>
+  <label class="switch">
+    <input type="checkbox" id="numbers" checked />
+    <span class="slider"></span>
+    <span class="label-text" id="label-numbers">Numbers</span>
+  </label>
 
+  <label class="switch">
+    <input type="checkbox" id="symbols" checked />
+    <span class="slider"></span>
+    <span class="label-text" id="label-symbols">Symbols</span>
+  </label>
 </div>
-<div id="password">Click "Generate"</div>
-<button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
-<button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
+
+
+<div id="password-container">
+  <div id="password">Click "Generate"</div>
+  <div class="button-row-tight">
+    <button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
+    <button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
+  </div>
 </div>
+
 
 <!-- 🔹 БЛОК 4: JavaScript логика -->
-<script defer="True" src="script.js"></script>
-<script src="slider-visual.js"></script>
-</body></html>
+<script defer src="main.js"></script>
+</body>
+</html>
