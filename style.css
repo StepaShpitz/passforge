@@ -98,6 +98,7 @@
       text-align: left;
       margin-top: 1rem;
       font-size: 0.9rem;
+      min-height: 170px; 
     }
     .controls label {
       display: flex;
@@ -240,3 +241,38 @@ input[type="range"]::-moz-range-thumb   {
   margin-left: 6px;
 }
 
+/* Контейнер с переключателями типа пароля */
+.password-type-selector {
+  display: flex;
+  background-color: var(--card-bg);  /* как основа UI */
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 1.2rem 0;
+  border: 1px solid #ccc;
+}
+
+/* Кнопка-переключатель */
+.type-btn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: var(--text-main);
+}
+
+/* При наведении — лёгкая подсветка */
+.type-btn:hover {
+  background-color: #f0f4ff;
+}
+
+/* Активная кнопка — синяя, белый текст */
+.type-btn.active {
+  background-color: var(--primary);
+  color: #fff;
+  font-weight: 100;
+}
+ndex: 1;
+}
