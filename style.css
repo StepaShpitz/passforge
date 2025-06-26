@@ -319,4 +319,25 @@ input[type="range"]::-moz-range-thumb   {
   justify-content: center;
 }
 
+@media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column-reverse; /* генератор станет сверху */
+  }
+
+  .intro {
+    width: 100%;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .generator {
+    width: 100%;
+    padding: 2rem 1.5rem;
+    align-items: flex-start;
+  }
+
+  body {
+    background: #eef1f5; /* можно убрать, если хочешь сохранить градиент */
+  }
+}
 
