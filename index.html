@@ -87,61 +87,78 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
+
+
+
+
 <body>
-<!-- 🔹 БЛОК 3: HTML структура страницы -->
-<div class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="lang-label">RU</span></div>
-<div id="container">
-<img src="logo_clean_bg.png" alt="PassForge Logo" style="max-width: 140px; margin-bottom: 1rem;"/>
-<h1 id="title">PassForge</h1>
-<p id="description">Generate strong, secure passwords with one click</p>
+  <div class="page-container">
+  <div class="page-layout">
+    
+    <!-- Левая колонка: описание -->
+    <div class="intro">
+      <h1>Effortless Security for Everyone</h1>
+      <p>Create unique, strong, and human-friendly passwords instantly with PassForge.</p>
+      <p>Fully private. Always local. No signups, no tracking.</p>
+      <p>Fast. Free. Flexible.</p>
+    </div>
 
+    <!-- Правая колонка: генератор -->
+    <div class="generator">
+      <div class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="lang-label">RU</span></div>
+      <div id="container">
+        <img src="logo_clean_bg.png" alt="PassForge Logo" style="max-width: 140px; margin-bottom: 1rem;" />
+        <h1 id="title">PassForge</h1>
+        <p id="description">Generate strong, secure passwords with one click</p>
 
-<!-- Переключатель типа пароля -->
-<div class="password-type-selector">
-  <!-- По умолчанию активен Random -->
-  <button class="type-btn active">Random</button>
-  <button class="type-btn">Memorable</button>
-  <button class="type-btn">#PIN</button>
-</div>
+        <!-- Переключатель типа пароля -->
+        <div class="password-type-selector">
+          <button class="type-btn active">Random</button>
+          <button class="type-btn">Memorable</button>
+          <button class="type-btn">#PIN</button>
+        </div>
 
+        <!-- Настройки -->
+        <div class="controls">
+          <label id="length-label">
+            Length: <span class="range-value-box" id="length-value">16</span>
+          </label>
+          <input id="length" type="range" min="4" max="64" value="16" />
 
+          <label class="switch">
+            <input type="checkbox" id="uppercase" checked />
+            <span class="slider"></span>
+            <span class="label-text" id="label-uppercase">Uppercase Letters</span>
+          </label>
 
-<div class="controls">
-  <label id="length-label">
-    Length: <span class="range-value-box" id="length-value">16</span>
-  </label>
-  <input id="length" type="range" min="4" max="64" value="16" />
+          <label class="switch">
+            <input type="checkbox" id="numbers" checked />
+            <span class="slider"></span>
+            <span class="label-text" id="label-numbers">Numbers</span>
+          </label>
 
-  <label class="switch">
-    <input type="checkbox" id="uppercase" checked />
-    <span class="slider"></span>
-    <span class="label-text" id="label-uppercase">Uppercase Letters</span>
-  </label>
+          <label class="switch">
+            <input type="checkbox" id="symbols" checked />
+            <span class="slider"></span>
+            <span class="label-text" id="label-symbols">Symbols</span>
+          </label>
+        </div>
 
-  <label class="switch">
-    <input type="checkbox" id="numbers" checked />
-    <span class="slider"></span>
-    <span class="label-text" id="label-numbers">Numbers</span>
-  </label>
-
-  <label class="switch">
-    <input type="checkbox" id="symbols" checked />
-    <span class="slider"></span>
-    <span class="label-text" id="label-symbols">Symbols</span>
-  </label>
-</div>
-
-
-<div id="password-container">
-  <div id="password">Click "Generate"</div>
-  <div class="button-row-tight">
-    <button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
-    <button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
+        <!-- Пароль -->
+        <div id="password-container">
+          <div id="password">Click "Generate"</div>
+          <div class="button-row-tight">
+            <button class="generate" id="generate-btn" onclick="generatePassword()">Generate</button>
+            <button class="copy" id="copy-btn" onclick="copyPassword()">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+  </>
 
-
-<!-- 🔹 БЛОК 4: JavaScript логика -->
-<script defer src="main.js"></script>
+  <!-- 🔹 JS -->
+  <script defer src="main.js"></script>
 </body>
+
 </html>

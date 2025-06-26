@@ -11,7 +11,12 @@
     body {
       font-family: 'Poppins', sans-serif;
       margin: 0;
-      background-color: var(--bg);
+      background: linear-gradient(to right,
+    #1f2a60 0%,        /* тёмно-синий */
+    #324b92 35%,       /* интро заканчивается */
+    #ccd8f4 65%,       /* генератор заканчивается */
+    #ffffff 100%       /* белый конец */
+  );
       color: var(--text-main);
       display: flex;
       justify-content: center;
@@ -274,5 +279,44 @@ input[type="range"]::-moz-range-thumb   {
   color: #fff;
   font-weight: 100;
 }
-ndex: 1;
+
+.page-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background-color: whites;
+  
 }
+
+.page-layout {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;       /* ⬅️ Центрируем содержимое */
+  min-height: 100vh;
+}
+
+.intro {
+  width: 40%;
+  padding: 40rem 3rem;
+  background: transparent;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+}
+.intro h1,
+.intro p {
+  color: white;e
+}
+
+
+.generator {
+  width: 60%;
+  padding: 4rem 3rem;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
