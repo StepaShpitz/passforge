@@ -321,23 +321,26 @@ input[type="range"]::-moz-range-thumb   {
 
 @media (max-width: 768px) {
   .page-layout {
-    flex-direction: column-reverse; /* генератор станет сверху */
+    flex-direction: column-reverse;
+    align-items: center;
   }
 
   .intro {
     width: 100%;
-    text-align: center;
     padding: 2rem 1.5rem;
+    text-align: center;
+    margin-top: 2rem;
   }
 
   .generator {
     width: 100%;
     padding: 2rem 1.5rem;
-    align-items: flex-start;
+    align-items: center;
   }
 
   body {
-    background: #eef1f5; /* можно убрать, если хочешь сохранить градиент */
+    background: #eef1f5;
   }
 }
+
 
