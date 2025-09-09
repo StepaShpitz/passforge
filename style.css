@@ -18,10 +18,7 @@
     #ffffff 100%       /* белый конец */
   );
       color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+     
     }
     #container {
       background: var(--card-bg);
@@ -283,21 +280,19 @@ input[type="range"]::-moz-range-thumb   {
 .page-container {
   display: flex;
   justify-content: center;
-  width: 100%;
-  background-color: whites;
-  
+  align-items: center;
+  min-height: 100vh; /* теперь центрируем .page-layout */
 }
 
 .page-layout {
   display: flex;
   width: 100%;
-  max-width: 1200px;       /* ⬅️ Центрируем содержимое */
-  min-height: 100vh;
+  max-width: 1200px;
 }
 
 .intro {
   width: 40%;
-  padding: 40rem 3rem;
+  padding: 4rem 3rem;
   background: transparent;
   color: white;
   display: flex;
@@ -342,5 +337,35 @@ input[type="range"]::-moz-range-thumb   {
     background: #eef1f5;
   }
 }
+.article-block {
+  background: #f9fafc;
+  padding: 4rem 2rem;
+  text-align: center;
+}
 
+.article-container {
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Poppins', sans-serif;
+}
+
+.article-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #1f2a60;
+}
+
+.article-container p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 1rem;
+}
+.site-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #888;
+  padding: 2rem 1rem;
+  background: #f1f1f1;
+}
 
