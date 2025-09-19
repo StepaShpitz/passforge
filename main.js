@@ -1,3 +1,60 @@
+
+const translations = {
+  ru: {
+    title: "PassForge",
+    description: "Генерируйте надёжные и безопасные пароли в один клик",
+    lengthLabel: "Длина",
+    uppercase: "Заглавные буквы",
+    numbers: "Цифры",
+    symbols: "Символы",
+    generate: "Сгенерировать",
+    copy: "Копировать",
+    type_random: "Случайный",
+    type_memorable: "Легкий",
+    type_pin: "ПИН",
+    headline: "Надёжные и удобные пароли для всех",
+    introLine1: "Создавайте уникальные, надёжные и удобные пароли с PassForge.",
+    introLine2: "Полная конфиденциальность. Всё работает локально. Без регистрации и слежки.",
+    introLine3: "Быстро. Бесплатно. Удобно.",
+    articleTitle: "Почему важно использовать надёжные пароли",
+    passwordPlaceholder: 'Нажмите "Сгенерировать"',
+    articleText: [
+      "В современном цифровом мире ваша безопасность начинается с пароля. Слабые и повторяющиеся пароли — одна из главных причин взломов и утечек данных.",
+      "Надёжный пароль защищает личную информацию, предотвращает несанкционированный доступ и обеспечивает безопасность ваших аккаунтов.",
+      "PassForge помогает создавать уникальные, сложные и при этом удобные для запоминания пароли — и всё это локально, без хранения данных."
+    ]
+  },
+  en: {
+    title: "PassForge",
+    description: "Generate strong, secure passwords with one click",
+    lengthLabel: "Length",
+    uppercase: "Uppercase Letters",
+    numbers: "Numbers",
+    symbols: "Symbols",
+    generate: "Generate",
+    copy: "Copy",
+    type_random: "Random",
+    type_memorable: "Memorable",
+    type_pin: "#PIN",
+    headline: "Strong and secure password for Everyone",
+    introLine1: "Create unique, strong, and human-friendly passwords instantly with PassForge.",
+    introLine2: "Fully private. Always local. No signups, no tracking.",
+    introLine3: "Fast. Free. Flexible.",
+    articleTitle: "Why Strong Passwords Matter",
+    passwordPlaceholder: 'Click "Generate"',
+    articleText: [
+      "In today’s digital world, your online security starts with a strong password. Weak or reused passwords are a leading cause of data breaches and account compromises.",
+      "A secure password protects your personal information, prevents unauthorized access, and keeps your accounts safe from hackers.",
+      "Tools like PassForge help you create unique, complex, and human-friendly passwords—without storing or sending any data. Your privacy matters."
+    ]
+  }
+};
+
+let currentLang = 'en'; // язык по умолчанию
+
+
+
+
 // === Глобальное состояние ===
 let currentType = "random"; // по умолчанию активен Random
 
@@ -247,4 +304,55 @@ document.addEventListener("DOMContentLoaded", () => {
     updateSliderBackground();
   }
 });
+
+
+
+function applyTranslations() {
+  const t = translations[currentLang];
+  const elements = document.querySelectorAll('[data-i18n]');
+  elements.forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[currentLang][key]) {
+      el.innerText = translations[currentLang][key];
+    }
+  });
+}
+
+
+function toggleLanguage() {
+  currentLang = currentLang === 'ru' ? 'en' : 'ru';
+  document.getElementById('lang-label').innerText = currentLang.toUpperCase();
+
+  const t = translations[currentLang];
+
+  // Генератор
+  document.getElementById('title').innerText = t.title;
+  document.getElementById('description').innerText = t.description;
+  document.getElementById('length-label').innerHTML =
+    `${t.lengthLabel}: <span class="range-value-box" id="length-value">${document.getElementById("length").value}</span>`;
+  document.getElementById('label-uppercase').innerText = t.uppercase;
+  document.getElementById('label-numbers').innerText = t.numbers;
+  document.getElementById('label-symbols').innerText = t.symbols;
+  document.getElementById('generate-btn').innerText = t.generate;
+  document.getElementById('copy-btn').innerText = t.copy;
+  document.getElementById("password").innerText = t.passwordPlaceholder;
+
+  // Кнопки типов паролей
+  const typeButtons = document.querySelectorAll(".type-btn");
+  typeButtons[0].innerText = t.type_random;
+  typeButtons[1].innerText = t.type_memorable;
+  typeButtons[2].innerText = t.type_pin;
+
+  // Статья
+  document.getElementById('article-title').innerText = t.articleTitle;
+  document.getElementById('article-p1').innerText = t.articleText[0];
+  document.getElementById('article-p2').innerText = t.articleText[1];
+  document.getElementById('article-p3').innerText = t.articleText[2];
+
+  document.getElementById('headline').innerText = t.headline;
+  document.getElementById('intro-line1').innerText = t.introLine1;
+  document.getElementById('intro-line2').innerText = t.introLine2;
+  document.getElementById('intro-line3').innerText = t.introLine3;
+}
+applyTranslations();
 
