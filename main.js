@@ -1,358 +1,615 @@
+/* =====================================================================
+   PassForge — main.js
+   Переписанная версия. Ключевые изменения против прежней:
+     1. CSPRNG (crypto.getRandomValues) + rejection sampling вместо Math.random()
+     2. Гарантия присутствия каждого выбранного класса символов
+     3. Осмысленный словарь для memorable + честный подсчёт энтропии
+     4. Тип пароля берётся из data-type, а не из подписи кнопки (чинит RU-режим)
+     5. Полная локализация, включая динамически созданные тумблеры
+     6. Копирование без alert(), с автоочисткой буфера
+     7. "Simplified PIN" выключен по умолчанию и помечен как небезопасный
+
+   Требует правок в index.html — см. сопроводительный файл index-notes.md
+   ===================================================================== */
+
+'use strict';
+
+/* ---------------------------------------------------------------------
+   1. КРИПТОСТОЙКАЯ СЛУЧАЙНОСТЬ
+
+   Math.random() в V8 — это xorshift128+, не CSPRNG: внутреннее состояние
+   восстанавливается из нескольких подряд выданных значений, после чего
+   вычисляется вся последовательность. Для генератора паролей неприменимо.
+
+   Ниже — равномерная выборка без modulo bias (rejection sampling).
+   ------------------------------------------------------------------- */
+
+function secureRandomInt(max) {
+  if (!Number.isInteger(max) || max <= 0) throw new RangeError('max must be a positive integer');
+  if (max === 1) return 0;
+
+  // Наибольшее кратное max, помещающееся в 32 бита. Всё, что выше, отбрасываем:
+  // иначе младшие значения выпадали бы чаще.
+  const limit = Math.floor(0x100000000 / max) * max;
+  const buf = new Uint32Array(1);
+  let value;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0];
+  } while (value >= limit);
+  return value % max;
+}
+
+function securePick(arrayLike) {
+  return arrayLike[secureRandomInt(arrayLike.length)];
+}
+
+// Перемешивание Фишера–Йетса на криптостойком источнике.
+function secureShuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = secureRandomInt(i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* ---------------------------------------------------------------------
+   2. НАБОРЫ СИМВОЛОВ
+   ------------------------------------------------------------------- */
+
+const CHARSETS = {
+  lowercase: 'abcdefghijklmnopqrstuvwxyz',
+  uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  numbers:   '0123456789',
+  symbols:   '!@#$%^&*()_+-=[]{}|;:,.<>?~'
+};
+
+// Символы, которые путаются при чтении и ручном вводе.
+const AMBIGUOUS = new Set(['0', 'O', 'o', '1', 'l', 'I', '|', '5', 'S', '2', 'Z', '8', 'B']);
+
+const stripAmbiguous = (s) => [...s].filter((c) => !AMBIGUOUS.has(c)).join('');
+
+/* ---------------------------------------------------------------------
+   3. СЛОВАРЬ ДЛЯ MEMORABLE
+
+   Этот список даёт log2(N) бит на слово. Полный EFF large wordlist
+   (7776 слов) даёт 12.9 бит/слово — его стоит подгружать отдельным
+   JSON-файлом и подставлять сюда. Источник: eff.org/dice
+
+   Требования к списку: только a-z, не короче 3 букв, без пар,
+   различающихся одной буквой.
+   ------------------------------------------------------------------- */
+
+const WORDLIST = [
+  'anchor','amber','apron','arrow','autumn','bacon','badge','bagel','bamboo','banjo',
+  'barrel','basil','beacon','beetle','bishop','bison','blanket','blossom','bonus','border',
+  'bottle','boulder','bracket','branch','bridge','bronze','bubble','bucket','buffalo','bundle',
+  'burrow','cabin','cactus','camera','candle','canyon','carbon','cargo','carpet','cascade',
+  'castle','cavern','cedar','cement','census','chapel','cheese','cherry','chimney','chisel',
+  'cinder','circus','citrus','clamp','clover','cobalt','cocoa','collar','column','comet',
+  'compass','copper','coral','cotton','cougar','crater','crayon','cricket','crimson','crystal',
+  'cuckoo','cupboard','curtain','cushion','cymbal','dagger','dahlia','daisy','damper','dazzle',
+  'decoy','denim','desert','diamond','digest','dolphin','domino','donkey','dragon','drawer',
+  'drifter','dungeon','eagle','eclipse','elbow','ember','emerald','engine','envelope','escort',
+  'ethanol','exhaust','fabric','falcon','fathom','feather','fender','fennel','ferret','fiddle',
+  'filter','flannel','flask','flint','floral','flute','forest','fossil','fountain','fragment',
+  'freckle','frost','funnel','furnace','gadget','galaxy','gallon','garlic','gazelle','geyser',
+  'ginger','glacier','glider','glimmer','gopher','granite','gravel','griffin','grotto','gutter',
+  'gypsum','hamlet','hammer','hamster','harbor','harvest','hazard','heather','helmet','hermit',
+  'hickory','hollow','honey','hornet','hurdle','iceberg','igloo','indigo','ingot','insect',
+  'ivory','jacket','jaguar','jasmine','jester','jigsaw','jockey','journal','jungle','juniper',
+  'kayak','kennel','kernel','kettle','keyhole','kitten','koala','ladder','lagoon','lantern',
+  'lattice','lavender','ledger','legend','lemon','leopard','lettuce','lichen','lilac','limber',
+  'linen','lizard','lobster','locket','lotus','lumber','lunar','lyric','magnet','mahogany',
+  'mammoth','mandolin','mango','maple','marble','margin','marmot','mascot','meadow','mercury',
+  'mermaid','meteor','mildew','mimic','mineral','minnow','mirror','mitten','molten','monarch',
+  'mosaic','mustang','mustard','nebula','nectar','needle','nickel','nomad','nougat','nutmeg',
+  'oasis','obsidian','octave','olive','orbit','orchard','orchid','origami','osprey','otter',
+  'oxygen','oyster','paddle','pantry','papaya','paprika','parcel','parrot','pasture','pebble',
+  'pelican','penguin','pepper','pewter','phantom','pheasant','pigment','pillar','pilot','pioneer',
+  'piston','pixel','plasma','platter','plaza','plumage','pocket','pollen','pontoon','poplar',
+  'portal','possum','pottery','prairie','pretzel','prism','pudding','pumpkin','puzzle','pyramid',
+  'quarry','quartz','quiver','rabbit','raccoon','radish','rafter','rainbow','ranger','rapids',
+  'raven','ravine','reactor','reagent','recess','reptile','rhubarb','ribbon','rifle','ripple',
+  'risotto','roster','rubble','rudder','ruffle','rustic','saddle','saffron','salmon','sandal',
+  'sapphire','sardine','satchel','scallop','scarlet','scepter','scooter','scorpion','scribble','seagull',
+  'seaweed','sequoia','shadow','shamrock','shelter','sherbet','shingle','shovel','shrapnel','shutter',
+  'signal','silver','siren','skillet','skylark','sliver','smolder','snorkel','socket','solar',
+  'sonnet','soprano','sparrow','spatula','spindle','spiral','sponge','spruce','squash','squirrel',
+  'stallion','stencil','stirrup','stucco','sulfur','summit','sunset','surfer','swallow','sweater',
+  'sycamore','syrup','tabby','tackle','talon','tandem','tangerine','tapestry','tavern','teapot',
+  'tempest','tender','tendril','termite','textile','thicket','thimble','thistle','thunder','ticket',
+  'tiger','timber','tinsel','toaster','tobacco','toffee','tomato','topaz','torrent','toucan',
+  'tractor','trapeze','treble','trellis','triangle','trickle','trident','trolley','trophy','truffle',
+  'trumpet','tulip','tundra','tunnel','turbine','turnip','turtle','tuxedo','twilight','ukulele',
+  'umbrella','uranium','vacuum','valley','vanilla','vault','velvet','vendor','venison','vertigo',
+  'vessel','vinegar','violet','viper','vulture','waffle','wagon','walnut','walrus','wander',
+  'warden','wasabi','waterfall','weasel','weaver','welder','whisker','whistle','widget','wigwam',
+  'willow','windmill','wisdom','wisteria','wombat','wonder','wrangler','wreath','wrench','yacht',
+  'yarrow','yellow','yodel','yogurt','zebra','zenith','zephyr','zigzag','zinnia','zipper',
+  'zodiac','zucchini'
+];
+
+const SEPARATORS = ['-', '.', '_', '+', '=', '~'];
+
+/* ---------------------------------------------------------------------
+   4. ЛОКАЛИЗАЦИЯ
+   ------------------------------------------------------------------- */
 
 const translations = {
-  ru: {
-    title: "PassForge",
-    description: "Генерируйте надёжные и безопасные пароли в один клик",
-    lengthLabel: "Длина",
-    uppercase: "Заглавные буквы",
-    numbers: "Цифры",
-    symbols: "Символы",
-    generate: "Сгенерировать",
-    copy: "Копировать",
-    type_random: "Случайный",
-    type_memorable: "Легкий",
-    type_pin: "ПИН",
-    headline: "Надёжные и удобные пароли для всех",
-    introLine1: "Создавайте уникальные, надёжные и удобные пароли с PassForge.",
-    introLine2: "Полная конфиденциальность. Всё работает локально. Без регистрации и слежки.",
-    introLine3: "Быстро. Бесплатно. Удобно.",
-    articleTitle: "Почему важно использовать надёжные пароли",
-    passwordPlaceholder: 'Нажмите "Сгенерировать"',
+  en: {
+    htmlLang: 'en',
+    title: 'PassForge',
+    description: 'Generate strong, secure passwords with one click',
+    lengthLabel: 'Length',
+    wordsLabel: 'Words',
+    digitsLabel: 'Digits',
+    uppercase: 'Uppercase Letters',
+    numbers: 'Numbers',
+    symbols: 'Symbols',
+    excludeAmbiguous: 'Exclude look-alike characters (0/O, 1/l)',
+    capitalize: 'Capitalize first letters',
+    addNumber: 'Add a number',
+    randomSeparator: 'Random separator',
+    simplifiedPin: 'Easy-to-remember pattern (not secure)',
+    generate: 'Generate',
+    copy: 'Copy',
+    copied: 'Copied',
+    copyFailed: 'Copy failed',
+    nothingToCopy: 'Generate one first',
+    selectOption: 'Select at least one character type',
+    type_random: 'Random',
+    type_memorable: 'Memorable',
+    type_pin: '#PIN',
+    headline: 'Strong and secure password for Everyone',
+    introLine1: 'Create unique, strong, and human-friendly passwords instantly with PassForge.',
+    introLine2: 'Fully private. Always local. No signups.',
+    introLine3: 'Fast. Free. Flexible.',
+    articleTitle: 'Why Strong Passwords Matter',
+    passwordPlaceholder: 'Click "Generate"',
+    entropyLabel: 'Strength',
+    crackLabel: 'Time to crack',
+    instantly: 'instantly',
+    strength: ['Very weak', 'Weak', 'Fair', 'Strong', 'Very strong'],
+    units: { second: 'seconds', minute: 'minutes', hour: 'hours', day: 'days', year: 'years', century: 'centuries' },
     articleText: [
-      "В современном цифровом мире ваша безопасность начинается с пароля. Слабые и повторяющиеся пароли — одна из главных причин взломов и утечек данных.",
-      "Надёжный пароль защищает личную информацию, предотвращает несанкционированный доступ и обеспечивает безопасность ваших аккаунтов.",
-      "PassForge помогает создавать уникальные, сложные и при этом удобные для запоминания пароли — и всё это локально, без хранения данных."
+      'In today\u2019s digital world, your online security starts with a strong password. Weak or reused passwords are a leading cause of data breaches and account compromises.',
+      'A secure password protects your personal information, prevents unauthorized access, and keeps your accounts safe from hackers.',
+      'Tools like PassForge help you create unique, complex, and human-friendly passwords \u2014 generated locally in your browser and never sent anywhere.'
     ]
   },
-  en: {
-    title: "PassForge",
-    description: "Generate strong, secure passwords with one click",
-    lengthLabel: "Length",
-    uppercase: "Uppercase Letters",
-    numbers: "Numbers",
-    symbols: "Symbols",
-    generate: "Generate",
-    copy: "Copy",
-    type_random: "Random",
-    type_memorable: "Memorable",
-    type_pin: "#PIN",
-    headline: "Strong and secure password for Everyone",
-    introLine1: "Create unique, strong, and human-friendly passwords instantly with PassForge.",
-    introLine2: "Fully private. Always local. No signups, no tracking.",
-    introLine3: "Fast. Free. Flexible.",
-    articleTitle: "Why Strong Passwords Matter",
-    passwordPlaceholder: 'Click "Generate"',
+  ru: {
+    htmlLang: 'ru',
+    title: 'PassForge',
+    description: 'Генерируйте надёжные и безопасные пароли в один клик',
+    lengthLabel: 'Длина',
+    wordsLabel: 'Слов',
+    digitsLabel: 'Цифр',
+    uppercase: 'Заглавные буквы',
+    numbers: 'Цифры',
+    symbols: 'Символы',
+    excludeAmbiguous: 'Исключить похожие символы (0/O, 1/l)',
+    capitalize: 'Заглавная первая буква',
+    addNumber: 'Добавить цифру',
+    randomSeparator: 'Случайный разделитель',
+    simplifiedPin: 'Легко запоминающийся шаблон (небезопасно)',
+    generate: 'Сгенерировать',
+    copy: 'Копировать',
+    copied: 'Скопировано',
+    copyFailed: 'Не удалось скопировать',
+    nothingToCopy: 'Сначала сгенерируйте',
+    selectOption: 'Выберите хотя бы один тип символов',
+    type_random: 'Случайный',
+    type_memorable: 'Запоминаемый',
+    type_pin: 'ПИН',
+    headline: 'Надёжные и удобные пароли для всех',
+    introLine1: 'Создавайте уникальные, надёжные и удобные пароли с PassForge.',
+    introLine2: 'Полная конфиденциальность. Всё работает локально. Без регистрации.',
+    introLine3: 'Быстро. Бесплатно. Удобно.',
+    articleTitle: 'Почему важно использовать надёжные пароли',
+    passwordPlaceholder: 'Нажмите «Сгенерировать»',
+    entropyLabel: 'Стойкость',
+    crackLabel: 'Время подбора',
+    instantly: 'мгновенно',
+    strength: ['Очень слабый', 'Слабый', 'Средний', 'Надёжный', 'Очень надёжный'],
+    units: { second: 'сек.', minute: 'мин.', hour: 'ч.', day: 'дн.', year: 'лет', century: 'веков' },
     articleText: [
-      "In today’s digital world, your online security starts with a strong password. Weak or reused passwords are a leading cause of data breaches and account compromises.",
-      "A secure password protects your personal information, prevents unauthorized access, and keeps your accounts safe from hackers.",
-      "Tools like PassForge help you create unique, complex, and human-friendly passwords—without storing or sending any data. Your privacy matters."
+      'В современном цифровом мире ваша безопасность начинается с пароля. Слабые и повторяющиеся пароли — одна из главных причин взломов и утечек данных.',
+      'Надёжный пароль защищает личную информацию, предотвращает несанкционированный доступ и обеспечивает безопасность ваших аккаунтов.',
+      'PassForge помогает создавать уникальные, сложные и при этом удобные пароли — генерация идёт локально в браузере, данные никуда не отправляются.'
     ]
   }
 };
 
-let currentLang = 'en'; // язык по умолчанию
+let currentLang = (navigator.language || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+let currentType = 'random';
+let lastEntropy = 0;
 
+const t = () => translations[currentLang];
+const $ = (id) => document.getElementById(id);
 
+/* ---------------------------------------------------------------------
+   5. ГЕНЕРАТОРЫ
+   ------------------------------------------------------------------- */
 
-
-// === Глобальное состояние ===
-let currentType = "random"; // по умолчанию активен Random
-
-// === Генерация пароля по текущему типу ===
-window.generatePassword = function () {
-  if (currentType === "random") {
-    generateRandomPassword();
-  } else if (currentType === "memorable") {
-    generateMemorablePassword();
-  } else if (currentType === "pin") {
-    generatePinPassword();
-  }
-};
-
-// === Копирование пароля в буфер обмена ===
-window.copyPassword = function () {
-  const passwordText = document.getElementById("password").textContent;
-  if (!passwordText || passwordText === "Click \"Generate\"" || passwordText.includes("Select")) {
-    alert("Нечего копировать.");
-    return;
-  }
-
-  navigator.clipboard.writeText(passwordText).then(() => {
-    alert("Пароль скопирован в буфер обмена!");
-  }).catch(() => {
-    alert("Не удалось скопировать пароль.");
-  });
-};
-
-// === Генерация Random пароля ===
 function generateRandomPassword() {
-  const length = parseInt(document.getElementById("length").value);
-  const useUppercase = document.getElementById("uppercase").checked;
-  const useNumbers = document.getElementById("numbers").checked;
-  const useSymbols = document.getElementById("symbols").checked;
+  const length = parseInt($('length').value, 10);
+  const noAmbiguous = $('exclude-ambiguous')?.checked;
 
-  const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
-  const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numberChars = "0123456789";
-  const symbolChars = "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+  // Каждый включённый класс — отдельный пул, чтобы гарантировать его наличие
+  // в результате. Раньше пароль с включёнными символами мог не содержать
+  // ни одного символа, что ломало сайты с обязательными требованиями.
+  const pools = [CHARSETS.lowercase];
+  if ($('uppercase').checked) pools.push(CHARSETS.uppercase);
+  if ($('numbers').checked)   pools.push(CHARSETS.numbers);
+  if ($('symbols').checked)   pools.push(CHARSETS.symbols);
 
-  let allChars = lowercaseChars;
-  if (useUppercase) allChars += uppercaseChars;
-  if (useNumbers) allChars += numberChars;
-  if (useSymbols) allChars += symbolChars;
+  const usable = pools
+    .map((p) => (noAmbiguous ? stripAmbiguous(p) : p))
+    .filter((p) => p.length > 0);
 
-  if (allChars.length === 0) {
-    document.getElementById("password").textContent = "Select at least one option!";
-    return;
-  }
+  if (usable.length === 0) return showMessage(t().selectOption);
 
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)];
-  }
+  const combined = usable.join('');
 
-  document.getElementById("password").textContent = password;
-  updateSliderBackground();
+  const chars = usable.slice(0, Math.min(usable.length, length)).map((pool) => securePick(pool));
+  while (chars.length < length) chars.push(securePick(combined));
+  secureShuffle(chars);
+
+  // Энтропия по общему пулу. Принудительное включение классов формально
+  // снижает её на доли бита — здесь округляем вниз, это консервативно.
+  showPassword(chars.join(''), length * Math.log2(combined.length));
 }
 
-// === Генерация Memorable пароля ===
 function generateMemorablePassword() {
-  const length = parseInt(document.getElementById("length").value);
-  const useCapitalize = document.getElementById("capitalize")?.checked;
-  const useFullWords = document.getElementById("fullwords")?.checked;
-
-  const fullWordsList = ["solar", "butter", "garden", "planet", "rocket", "silent", "zebra", "velvet", "orange", "widget"];
-  const shortSyllables = ["ba", "po", "re", "tu", "ni", "zo", "ki", "ma", "lu", "da"];
+  const wordCount = parseInt($('length').value, 10);
+  const capitalize = $('capitalize')?.checked;
+  const addNumber  = $('addnumber')?.checked;
+  const randomSep  = $('randomsep')?.checked;
 
   const words = [];
-
-  for (let i = 0; i < length; i++) {
-    let word;
-    if (useFullWords) {
-      word = fullWordsList[Math.floor(Math.random() * fullWordsList.length)];
-    } else {
-      word = shortSyllables[Math.floor(Math.random() * shortSyllables.length)] +
-             shortSyllables[Math.floor(Math.random() * shortSyllables.length)];
-    }
-
-    if (useCapitalize) {
-      word = word.charAt(0).toUpperCase() + word.slice(1);
-    }
-
-    words.push(word);
+  for (let i = 0; i < wordCount; i++) {
+    let w = securePick(WORDLIST);
+    if (capitalize) w = w[0].toUpperCase() + w.slice(1);
+    words.push(w);
   }
 
-  const password = words.join("-");
-  document.getElementById("password").textContent = password;
-  updateSliderBackground();
+  const sep = randomSep ? securePick(SEPARATORS) : '-';
+  let password = words.join(sep);
+
+  // Заглавная первая буква — детерминированное преобразование, 0 бит.
+  let entropy = wordCount * Math.log2(WORDLIST.length);
+  if (randomSep) entropy += Math.log2(SEPARATORS.length);
+
+  if (addNumber) {
+    const num = String(10 + secureRandomInt(90));
+    const pos = secureRandomInt(wordCount + 1);
+    const parts = password.split(sep);
+    parts.splice(pos, 0, num);
+    password = parts.join(sep);
+    entropy += Math.log2(90) + Math.log2(wordCount + 1);
+  }
+
+  showPassword(password, entropy);
 }
 
-// === Генерация PIN-кода ===
 function generatePinPassword() {
-  const simplified = document.getElementById("simplifiedpin")?.checked;
-  const length = parseInt(document.getElementById("length").value);
+  const length = parseInt($('length').value, 10);
+  const simplified = $('simplifiedpin')?.checked;
 
   if (simplified) {
-    let pin = "";
-    const patternType = Math.floor(Math.random() * 3);
-    const A = randomDigit();
-    const B = randomDigit();
-    const C = randomDigit();
+    // Намеренно слабый режим: повторяющийся шаблон из 2–3 уникальных цифр.
+    // Оставлен только по явному выбору пользователя и с предупреждением
+    // в подписи. По умолчанию выключен.
+    const pattern = secureRandomInt(3);
+    const a = secureRandomInt(10), b = secureRandomInt(10), c = secureRandomInt(10);
 
-    if (patternType === 0 && length >= 4) {
-      for (let i = 0; i < length; i++) {
-        pin += i % 2 === 0 ? A : B;
-      }
-    } else if (patternType === 1 && length >= 4) {
-      pin = A + A + B + B + C + C;
-      pin = pin.slice(0, length);
-    } else {
-      const part = A + B + C;
-      pin = (part + part).slice(0, length);
-    }
+    let unit;
+    if (pattern === 0)      unit = `${a}${b}`;           // ABAB...
+    else if (pattern === 1) unit = `${a}${a}${b}${b}`;   // AABB...
+    else                    unit = `${a}${b}${c}`;       // ABCABC...
 
-    document.getElementById("password").textContent = pin;
-  } else {
-    const digits = "0123456789";
-    let pin = "";
-    for (let i = 0; i < length; i++) {
-      pin += digits[Math.floor(Math.random() * digits.length)];
-    }
-    document.getElementById("password").textContent = pin;
+    // Цикл вместо прежнего slice(0, length) по строке фиксированной длины —
+    // раньше 12-значный "ПИН" возвращался длиной 6.
+    let pin = '';
+    while (pin.length < length) pin += unit;
+    pin = pin.slice(0, length);
+
+    const uniqueDigits = pattern === 2 ? 3 : 2;
+    showPassword(pin, Math.log2(3) + uniqueDigits * Math.log2(10));
+    return;
   }
 
+  let pin = '';
+  for (let i = 0; i < length; i++) pin += secureRandomInt(10);
+  showPassword(pin, length * Math.log2(10));
+}
+
+window.generatePassword = function () {
+  if (currentType === 'random')         generateRandomPassword();
+  else if (currentType === 'memorable') generateMemorablePassword();
+  else if (currentType === 'pin')       generatePinPassword();
+};
+
+/* ---------------------------------------------------------------------
+   6. ВЫВОД И ОЦЕНКА СТОЙКОСТИ
+   ------------------------------------------------------------------- */
+
+function showPassword(password, entropyBits) {
+  lastEntropy = entropyBits;
+  const el = $('password');
+  el.textContent = password;
+  el.dataset.empty = 'false';
+  renderStrength(entropyBits);
   updateSliderBackground();
 }
 
-function randomDigit() {
-  return Math.floor(Math.random() * 10).toString();
+function showMessage(msg) {
+  const el = $('password');
+  el.textContent = msg;
+  el.dataset.empty = 'true';
+  lastEntropy = 0;
+  renderStrength(null);
 }
 
-function updateLengthDisplay() {
-  const lengthInput = document.getElementById("length");
-  document.getElementById("length-value").textContent = lengthInput.value;
+// Консервативная модель: офлайновый перебор быстрого хэша, 1e11 попыток/сек.
+// В среднем требуется половина пространства ключей — отсюда 2^(bits-1).
+const GUESSES_PER_SECOND = 1e11;
+
+function formatCrackTime(entropyBits) {
+  const seconds = Math.pow(2, entropyBits - 1) / GUESSES_PER_SECOND;
+  const u = t().units;
+  if (seconds < 1)        return t().instantly;
+  if (seconds < 60)       return `${Math.round(seconds)} ${u.second}`;
+  if (seconds < 3600)     return `${Math.round(seconds / 60)} ${u.minute}`;
+  if (seconds < 86400)    return `${Math.round(seconds / 3600)} ${u.hour}`;
+  if (seconds < 31557600) return `${Math.round(seconds / 86400)} ${u.day}`;
+
+  const years = seconds / 31557600;
+  if (years < 1e6) return `${Math.round(years).toLocaleString(currentLang)} ${u.year}`;
+  return `10^${Math.round(Math.log10(years))} ${u.year}`;
 }
 
-function updateSliderBackground() {
-  const slider = document.getElementById("length");
-  const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-  slider.style.background = `linear-gradient(to right, #4a90e2 0%, #4a90e2 ${value}%, #ccc ${value}%, #ccc 100%)`;
+function strengthTier(bits) {
+  if (bits < 40)  return 0;
+  if (bits < 60)  return 1;
+  if (bits < 80)  return 2;
+  if (bits < 100) return 3;
+  return 4;
 }
 
-const typeButtons = document.querySelectorAll('.type-btn');
-typeButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    typeButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+function renderStrength(bits) {
+  const box = $('strength-meter');
+  if (!box) return;
 
-    let type = btn.textContent.trim().toLowerCase();
-    if (type === "#pin") type = "pin";
-    currentType = type;
+  if (bits === null || bits === 0) { box.hidden = true; return; }
+  box.hidden = false;
 
-    updateUIForType(type);
-  });
-});
+  const tier = strengthTier(bits);
+  box.dataset.tier = String(tier);
+
+  const bar = $('strength-bar');
+  if (bar) bar.style.width = `${Math.min(100, (bits / 128) * 100)}%`;
+
+  const label = $('strength-text');
+  if (label) {
+    label.textContent =
+      `${t().entropyLabel}: ${Math.floor(bits)} bit — ${t().strength[tier]} · ` +
+      `${t().crackLabel}: ${formatCrackTime(bits)}`;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   7. КОПИРОВАНИЕ
+   ------------------------------------------------------------------- */
+
+let clipboardTimer = null;
+
+window.copyPassword = async function () {
+  const el = $('password');
+  const text = el.textContent;
+
+  if (!text || el.dataset.empty === 'true') {
+    flashButton('copy-btn', t().nothingToCopy);
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    flashButton('copy-btn', t().copied);
+
+    // Буфер обмена — общесистемный ресурс, доступный другим приложениям.
+    // Чистим через 60 секунд, если пользователь сам ничего туда не положил.
+    clearTimeout(clipboardTimer);
+    clipboardTimer = setTimeout(async () => {
+      try {
+        const still = await navigator.clipboard.readText();
+        if (still === text) await navigator.clipboard.writeText('');
+      } catch { /* нет разрешения на чтение — тихо пропускаем */ }
+    }, 60000);
+  } catch {
+    flashButton('copy-btn', t().copyFailed);
+  }
+};
+
+function flashButton(id, message) {
+  const btn = $(id);
+  if (!btn) return;
+  const original = t().copy;
+  btn.textContent = message;
+  btn.disabled = true;
+  setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1400);
+}
+
+/* ---------------------------------------------------------------------
+   8. UI: ПЕРЕКЛЮЧЕНИЕ ТИПОВ
+
+   Тип читается из data-type, а не из подписи кнопки. Раньше сравнение шло
+   по textContent, поэтому после перевода интерфейса на русский
+   ("Случайный") переключатель переставал работать вовсе.
+   ------------------------------------------------------------------- */
+
+function createSwitchOption(id, i18nKey, checked = false) {
+  const wrapper = document.createElement('label');
+  wrapper.className = 'switch dynamic-option';
+
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.id = id;
+  input.checked = checked;
+
+  const slider = document.createElement('span');
+  slider.className = 'slider';
+
+  const label = document.createElement('span');
+  label.className = 'label-text';
+  label.setAttribute('data-i18n', i18nKey);   // теперь переводится
+  label.textContent = t()[i18nKey];
+
+  wrapper.append(input, slider, label);
+  return wrapper;
+}
 
 function updateUIForType(type) {
-  const uppercase = document.getElementById("uppercase").parentElement;
-  const numbers = document.getElementById("numbers").parentElement;
-  const symbols = document.getElementById("symbols").parentElement;
+  const controls = document.querySelector('.controls');
+  const lengthSlider = $('length');
 
-  uppercase.style.display = "flex";
-  numbers.style.display = "flex";
-  symbols.style.display = "flex";
+  const toggle = (id, show) => {
+    const node = $(id)?.closest('.switch');
+    if (node) node.style.display = show ? 'flex' : 'none';
+  };
 
-  document.querySelectorAll(".memorable-extra").forEach(el => el.remove());
+  document.querySelectorAll('.dynamic-option').forEach((el) => el.remove());
 
-  const lengthSlider = document.getElementById("length");
+  if (type === 'memorable') {
+    toggle('uppercase', false); toggle('numbers', false); toggle('symbols', false);
+    toggle('exclude-ambiguous', false);
+    controls.append(
+      createSwitchOption('capitalize', 'capitalize', true),
+      createSwitchOption('addnumber', 'addNumber', false),
+      createSwitchOption('randomsep', 'randomSeparator', false)
+    );
+    lengthSlider.min = 3; lengthSlider.max = 10; lengthSlider.value = 5;
+    setLengthCaption(t().wordsLabel);
 
-  if (type === "memorable") {
-    uppercase.style.display = "none";
-    numbers.style.display = "none";
-    symbols.style.display = "none";
+  } else if (type === 'pin') {
+    toggle('uppercase', false); toggle('numbers', false); toggle('symbols', false);
+    toggle('exclude-ambiguous', false);
+    // По умолчанию ВЫКЛЮЧЕН. Прежняя версия включала его молча, что резало
+    // 6-значный ПИН с 10^6 примерно до 3·10^3 вариантов.
+    controls.append(createSwitchOption('simplifiedpin', 'simplifiedPin', false));
+    lengthSlider.min = 4; lengthSlider.max = 12; lengthSlider.value = 6;
+    setLengthCaption(t().digitsLabel);
 
-    const controls = document.querySelector(".controls");
-    const capitalize = createSwitchOption("capitalize", "Capitalize the first letter");
-    const fullWords = createSwitchOption("fullwords", "Use full words");
-
-    capitalize.classList.add("memorable-extra");
-    fullWords.classList.add("memorable-extra");
-
-    controls.appendChild(capitalize);
-    controls.appendChild(fullWords);
-
-    lengthSlider.min = 3;
-    lengthSlider.max = 15;
-    lengthSlider.value = 4;
-  } else if (type === "pin") {
-    uppercase.style.display = "none";
-    numbers.style.display = "none";
-    symbols.style.display = "none";
-
-    const controls = document.querySelector(".controls");
-    const simplified = createSwitchOption("simplifiedpin", "Simplified PIN");
-
-    simplified.classList.add("memorable-extra");
-    simplified.querySelector("input").checked = true;
-    controls.appendChild(simplified);
-
-    lengthSlider.min = 4;
-    lengthSlider.max = 12;
-    lengthSlider.value = 6;
   } else {
-    lengthSlider.min = 4;
-    lengthSlider.max = 64;
-    if (lengthSlider.value < 4) lengthSlider.value = 4;
-    if (lengthSlider.value > 64) lengthSlider.value = 64;
+    toggle('uppercase', true); toggle('numbers', true); toggle('symbols', true);
+    toggle('exclude-ambiguous', true);
+    lengthSlider.min = 8; lengthSlider.max = 64;
+    lengthSlider.value = Math.min(64, Math.max(8, parseInt(lengthSlider.value, 10) || 16));
+    setLengthCaption(t().lengthLabel);
   }
 
   updateLengthDisplay();
   updateSliderBackground();
+  renderStrength(null);
+  $('password').textContent = t().passwordPlaceholder;
+  $('password').dataset.empty = 'true';
 }
 
-function createSwitchOption(id, labelText) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "switch";
-
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.id = id;
-
-  const slider = document.createElement("span");
-  slider.className = "slider";
-
-  const label = document.createElement("span");
-  label.className = "label-text";
-  label.textContent = labelText;
-
-  wrapper.appendChild(input);
-  wrapper.appendChild(slider);
-  wrapper.appendChild(label);
-
-  return wrapper;
+function setLengthCaption(text) {
+  const cap = $('length-caption');
+  if (cap) cap.textContent = text;
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const mainSlider = document.getElementById("length");
-  if (mainSlider) {
-    mainSlider.addEventListener("input", () => {
-      updateLengthDisplay();
-      updateSliderBackground();
-    });
+function updateLengthDisplay() {
+  const v = $('length-value');
+  if (v) v.textContent = $('length').value;
+}
 
-    updateLengthDisplay();
-    updateSliderBackground();
-  }
-});
+function updateSliderBackground() {
+  const s = $('length');
+  if (!s) return;
+  const pct = ((s.value - s.min) / (s.max - s.min)) * 100;
+  s.style.setProperty('--slider-fill', `${pct}%`);
+  s.style.background = `linear-gradient(to right, #4a90e2 0 ${pct}%, #ccc ${pct}% 100%)`;
+}
 
-
+/* ---------------------------------------------------------------------
+   9. ЛОКАЛИЗАЦИЯ: ПРИМЕНЕНИЕ
+   ------------------------------------------------------------------- */
 
 function applyTranslations() {
-  const t = translations[currentLang];
-  const elements = document.querySelectorAll('[data-i18n]');
-  elements.forEach(el => {
+  const tr = t();
+  document.documentElement.lang = tr.htmlLang;
+
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
-    if (translations[currentLang][key]) {
-      el.innerText = translations[currentLang][key];
-    }
+    if (tr[key] !== undefined) el.textContent = tr[key];
   });
+
+  document.querySelectorAll('.type-btn').forEach((btn) => {
+    const key = `type_${btn.dataset.type}`;
+    if (tr[key]) btn.textContent = tr[key];
+  });
+
+  // Подпись тумблера показывает язык, НА КОТОРЫЙ переключимся.
+  const label = $('lang-label');
+  if (label) label.textContent = currentLang === 'ru' ? 'EN' : 'RU';
+
+  const art = tr.articleText;
+  ['article-p1', 'article-p2', 'article-p3'].forEach((id, i) => {
+    if ($(id) && art[i]) $(id).textContent = art[i];
+  });
+
+  setLengthCaption(
+    currentType === 'memorable' ? tr.wordsLabel :
+    currentType === 'pin'       ? tr.digitsLabel : tr.lengthLabel
+  );
+
+  if ($('password') && $('password').dataset.empty !== 'false') {
+    $('password').textContent = tr.passwordPlaceholder;
+  }
+  if (lastEntropy > 0) renderStrength(lastEntropy);
 }
 
-
-function toggleLanguage() {
+window.toggleLanguage = function () {
   currentLang = currentLang === 'ru' ? 'en' : 'ru';
-  document.getElementById('lang-label').innerText = currentLang.toUpperCase();
+  try { localStorage.setItem('pf-lang', currentLang); } catch { /* private mode */ }
+  applyTranslations();
+};
 
-  const t = translations[currentLang];
+/* ---------------------------------------------------------------------
+   10. ИНИЦИАЛИЗАЦИЯ
+   ------------------------------------------------------------------- */
 
-  // Генератор
-  document.getElementById('title').innerText = t.title;
-  document.getElementById('description').innerText = t.description;
-  document.getElementById('length-label').innerHTML =
-    `${t.lengthLabel}: <span class="range-value-box" id="length-value">${document.getElementById("length").value}</span>`;
-  document.getElementById('label-uppercase').innerText = t.uppercase;
-  document.getElementById('label-numbers').innerText = t.numbers;
-  document.getElementById('label-symbols').innerText = t.symbols;
-  document.getElementById('generate-btn').innerText = t.generate;
-  document.getElementById('copy-btn').innerText = t.copy;
-  document.getElementById("password").innerText = t.passwordPlaceholder;
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const saved = localStorage.getItem('pf-lang');
+    if (saved && translations[saved]) currentLang = saved;
+  } catch { /* ignore */ }
 
-  // Кнопки типов паролей
-  const typeButtons = document.querySelectorAll(".type-btn");
-  typeButtons[0].innerText = t.type_random;
-  typeButtons[1].innerText = t.type_memorable;
-  typeButtons[2].innerText = t.type_pin;
+  document.querySelectorAll('.type-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.type-btn').forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      currentType = btn.dataset.type;
+      updateUIForType(currentType);
+    });
+  });
 
-  // Статья
-  document.getElementById('article-title').innerText = t.articleTitle;
-  document.getElementById('article-p1').innerText = t.articleText[0];
-  document.getElementById('article-p2').innerText = t.articleText[1];
-  document.getElementById('article-p3').innerText = t.articleText[2];
+  $('length')?.addEventListener('input', () => {
+    updateLengthDisplay();
+    updateSliderBackground();
+  });
 
-  document.getElementById('headline').innerText = t.headline;
-  document.getElementById('intro-line1').innerText = t.introLine1;
-  document.getElementById('intro-line2').innerText = t.introLine2;
-  document.getElementById('intro-line3').innerText = t.introLine3;
-}
-applyTranslations();
+  $('generate-btn')?.addEventListener('click', window.generatePassword);
+  $('copy-btn')?.addEventListener('click', window.copyPassword);
+  $('lang-toggle')?.addEventListener('click', window.toggleLanguage);
 
+  applyTranslations();
+  updateUIForType('random');
+});
