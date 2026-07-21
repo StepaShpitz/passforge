@@ -36,7 +36,10 @@
 }
 
 body {
-  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  /* Montserrat вместо Poppins: у Poppins нет кириллицы (только devanagari,
+     latin-ext, latin), из-за чего русский текст отрисовывался системным
+     шрифтом и отличался от английского у каждого пользователя по-своему. */
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
   margin: 0;
   background: linear-gradient(to right,
     #1f2a60 0%,
@@ -379,7 +382,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Плейсхолдер и сообщения об ошибке — обычным шрифтом, приглушённо */
 #password[data-empty="true"] {
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: .95rem;
   color: #8a94a3;
   letter-spacing: normal;

@@ -112,6 +112,14 @@
         "@type": "Answer",
         "text": "Around 80 bits is generally considered sufficient against offline brute-force attacks, and 100 bits or more gives a comfortable margin. A 16-character password using upper case, lower case, digits and symbols yields roughly 104 bits."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "Is a passphrase better than a password?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A passphrase made of several randomly chosen words is far easier for a person to remember than a string of symbols, at comparable strength. The key condition is that the words must be picked at random by software from a large list, not chosen by you."
+      }
     }
   ]
 }
@@ -122,7 +130,7 @@
      лучше положить локально и подключить через @font-face. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
 <link rel="stylesheet" href="/style.css" />
 </head>
@@ -239,6 +247,30 @@
     </p>
     <p id="article-p3">
       Tools like PassForge help you create unique, complex, and human-friendly passwords — generated locally in your browser and never sent anywhere.
+    </p>
+
+    <h2>What Password Entropy Actually Measures</h2>
+    <p>
+      Password strength is not measured by character count, and certainly not by whether you remembered to add an exclamation mark. It is measured in bits of entropy — a number describing how large the set of possible passwords was that yours got picked from. Every additional bit doubles the work an attacker has to do.
+    </p>
+    <p>
+      A 16-character password drawing on lower case, upper case, digits and symbols gives roughly 104 bits. A six-digit PIN gives about 20 bits, which falls to a brute-force attack effectively instantly. That is why PassForge shows you a concrete number underneath the field rather than a vague "weak to strong" bar: the number is something you can reason about, a coloured bar is not.
+    </p>
+
+    <h2>Random or Memorable</h2>
+    <p>
+      A random string of characters is more compact at any given strength, but essentially impossible for a human to memorise — those passwords only make sense when stored in a password manager. A memorable passphrase is built from separate words: it runs longer, but you can actually keep it in your head, which is what you need for the handful of passwords typed by hand — the master password for the manager itself, disk encryption, your laptop login.
+    </p>
+    <p>
+      One thing worth being clear about: swapping letters for lookalike characters, turning "password" into "p@ssw0rd", adds almost nothing. Cracking tools have applied those substitutions automatically for decades. Length does far more work than cleverness ever will.
+    </p>
+
+    <h2>How This Works</h2>
+    <p>
+      Random values come from <code>crypto.getRandomValues()</code>, the browser's own cryptographic generator. The ordinary <code>Math.random()</code> is unfit for passwords: its internal state can be reconstructed from a handful of outputs, after which the entire sequence — past and future — is computable.
+    </p>
+    <p>
+      Everything is generated on your device. Passwords are never sent to a server, never logged, and never stored. Closing the tab is all it takes for them to be gone.
     </p>
   </div>
 </section>
