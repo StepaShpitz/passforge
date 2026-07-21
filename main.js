@@ -221,9 +221,21 @@ const translations = {
   }
 };
 
-let currentLang = (navigator.language || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+/* Язык определяется разметкой страницы (/ -> en, /ru/ -> ru), а не JS-состоянием.
+   Раньше перевод жил только в памяти и отдельного URL не существовало, поэтому
+   поисковики видели сайт одноязычным, а русские запросы проходили мимо. */
+const LANG_PATHS = { en: '/', ru: '/ru/' };
+
+let currentLang = document.documentElement.lang === 'ru' ? 'ru' : 'en';
 let currentType = 'random';
 let lastEntropy = 0;
+
+/* Длина запоминается отдельно для каждого типа.
+   Раньше значение просто клампилось к минимуму текущего режима: после PIN (6)
+   возврат на Random давал 8 символов и «Weak» вместо дефолтных 16. */
+const lastLength = { random: 16, memorable: 5, pin: 6 };
+
+const clampLength = (v, lo, hi) => Math.min(hi, Math.max(lo, parseInt(v, 10) || lo));
 
 const t = () => translations[currentLang];
 const $ = (id) => document.getElementById(id);
@@ -489,7 +501,8 @@ function updateUIForType(type) {
       createSwitchOption('addnumber', 'addNumber', false),
       createSwitchOption('randomsep', 'randomSeparator', false)
     );
-    lengthSlider.min = 3; lengthSlider.max = 10; lengthSlider.value = 5;
+    lengthSlider.min = 3; lengthSlider.max = 10;
+    lengthSlider.value = clampLength(lastLength.memorable, 3, 10);
     setLengthCaption(t().wordsLabel);
 
   } else if (type === 'pin') {
@@ -498,14 +511,15 @@ function updateUIForType(type) {
     // По умолчанию ВЫКЛЮЧЕН. Прежняя версия включала его молча, что резало
     // 6-значный ПИН с 10^6 примерно до 3·10^3 вариантов.
     controls.append(createSwitchOption('simplifiedpin', 'simplifiedPin', false));
-    lengthSlider.min = 4; lengthSlider.max = 12; lengthSlider.value = 6;
+    lengthSlider.min = 4; lengthSlider.max = 12;
+    lengthSlider.value = clampLength(lastLength.pin, 4, 12);
     setLengthCaption(t().digitsLabel);
 
   } else {
     toggle('uppercase', true); toggle('numbers', true); toggle('symbols', true);
     toggle('exclude-ambiguous', true);
     lengthSlider.min = 8; lengthSlider.max = 64;
-    lengthSlider.value = Math.min(64, Math.max(8, parseInt(lengthSlider.value, 10) || 16));
+    lengthSlider.value = clampLength(lastLength.random, 8, 64);
     setLengthCaption(t().lengthLabel);
   }
 
@@ -573,9 +587,9 @@ function applyTranslations() {
 }
 
 window.toggleLanguage = function () {
-  currentLang = currentLang === 'ru' ? 'en' : 'ru';
-  try { localStorage.setItem('pf-lang', currentLang); } catch { /* private mode */ }
-  applyTranslations();
+  // Переход на реальный URL, а не подмена текста: ссылкой можно поделиться,
+  // а поисковик получает две отдельные индексируемые страницы.
+  window.location.href = LANG_PATHS[currentLang === 'ru' ? 'en' : 'ru'];
 };
 
 /* ---------------------------------------------------------------------
@@ -583,11 +597,6 @@ window.toggleLanguage = function () {
    ------------------------------------------------------------------- */
 
 document.addEventListener('DOMContentLoaded', () => {
-  try {
-    const saved = localStorage.getItem('pf-lang');
-    if (saved && translations[saved]) currentLang = saved;
-  } catch { /* ignore */ }
-
   document.querySelectorAll('.type-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.type-btn').forEach((b) => {
@@ -602,6 +611,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $('length')?.addEventListener('input', () => {
+    lastLength[currentType] = parseInt($('length').value, 10);
     updateLengthDisplay();
     updateSliderBackground();
   });
