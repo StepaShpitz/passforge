@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>PassForge — генератор надёжных паролей онлайн</title>
+
+<meta name="description" content="Генератор надёжных паролей: случайные, запоминаемые и PIN-коды. Настройка длины, символов и цифр, показ энтропии в битах. Бесплатно, всё считается локально в браузере." />
+<meta name="author" content="PassForge" />
+<meta name="robots" content="index, follow" />
+<meta name="theme-color" content="#1f2a60" />
+
+<link rel="canonical" href="https://passforge.net/ru/" />
+
+<link rel="alternate" hreflang="en" href="https://passforge.net/" />
+<link rel="alternate" hreflang="ru" href="https://passforge.net/ru/" />
+<link rel="alternate" hreflang="x-default" href="https://passforge.net/" />
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type"        content="website" />
+<meta property="og:url"         content="https://passforge.net/ru/" />
+<meta property="og:locale"      content="ru_RU" />
+<meta property="og:title"       content="PassForge — генератор надёжных паролей онлайн" />
+<meta property="og:description" content="Пароли генерируются локально в вашем браузере. Без регистрации, без отправки данных." />
+<meta property="og:image"       content="https://passforge.net/og-image.png" />
+<meta property="og:image:width"  content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card"        content="summary_large_image" />
+<meta name="twitter:title"       content="PassForge — генератор надёжных паролей онлайн" />
+<meta name="twitter:description" content="Пароли генерируются локально в вашем браузере. Без регистрации, без отправки данных." />
+<meta name="twitter:image"       content="https://passforge.net/og-image.png" />
+
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "inLanguage": "ru",
+  "name": "PassForge",
+  "url": "https://passforge.net/ru/",
+  "applicationCategory": "SecurityApplication",
+  "applicationSubCategory": "PasswordManager",
+  "operatingSystem": "Web",
+  "description": "Генератор надёжных паролей с настройкой длины, символов и цифр. Всё считается локально в браузере через Web Crypto API.",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "PassForge",
+    "url": "https://passforge.net/"
+  },
+  "datePublished": "2025-06-23"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "inLanguage": "ru",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Как сгенерировать надёжный пароль?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Выберите тип пароля и настройте длину, символы и цифры, затем нажмите «Сгенерировать» и скопируйте результат. Под полем показывается энтропия в битах и примерная оценка времени подбора."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "PassForge бесплатный?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Да, сервис полностью бесплатный и не требует регистрации."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Сохраняются ли сгенерированные пароли?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Нет. Пароли создаются прямо в браузере через Web Crypto API и никуда не передаются и нигде не сохраняются."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Сколько бит энтропии должно быть у пароля?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Порядка 80 бит обычно считается достаточным против офлайнового перебора, а 100 бит и выше дают запас на годы вперёд. Пароль из 16 символов с заглавными, строчными буквами, цифрами и символами даёт примерно 104 бита."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Чем запоминаемый пароль отличается от случайного?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Запоминаемый пароль собирается из отдельных слов и легче удерживается в памяти, но при равной стойкости он длиннее случайного. Случайный набор символов компактнее, но его практически невозможно запомнить, поэтому его хранят в менеджере паролей."
+      }
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+
+<div class="page-container">
+  <div class="page-layout">
+
+    <div class="intro">
+      <h1 id="headline" data-i18n="headline">Надёжные и удобные пароли для всех</h1>
+      <p id="intro-line1" data-i18n="introLine1">Создавайте уникальные, надёжные и удобные пароли с PassForge.</p>
+      <p id="intro-line2" data-i18n="introLine2">Полная конфиденциальность. Всё работает локально. Без регистрации.</p>
+      <p id="intro-line3" data-i18n="introLine3">Быстро. Бесплатно. Удобно.</p>
+    </div>
+
+    <div class="generator">
+
+      <a href="/" class="lang-toggle" id="lang-toggle" hreflang="en"
+         aria-label="Switch to English">🌐 <span id="lang-label">EN</span></a>
+
+      <div id="container">
+
+        <img src="/logo.webp" alt="PassForge" width="140" height="140"
+             class="brand-logo" fetchpriority="high" decoding="async" />
+
+        <p class="brand-name">PassForge</p>
+        <p id="description" data-i18n="description">Генерируйте надёжные и безопасные пароли в один клик</p>
+
+        <div class="password-type-selector" role="tablist">
+          <button type="button" class="type-btn active" data-type="random"    role="tab" aria-selected="true">Случайный</button>
+          <button type="button" class="type-btn"        data-type="memorable" role="tab" aria-selected="false">Запоминаемый</button>
+          <button type="button" class="type-btn"        data-type="pin"       role="tab" aria-selected="false">ПИН</button>
+        </div>
+
+        <div class="controls">
+
+          <label id="length-label" class="length-label">
+            <span id="length-caption">Длина</span>:
+            <span class="range-value-box" id="length-value">16</span>
+          </label>
+          <input id="length" type="range" min="8" max="64" value="16" aria-labelledby="length-caption" />
+
+          <label class="switch">
+            <input type="checkbox" id="uppercase" checked />
+            <span class="slider"></span>
+            <span class="label-text" data-i18n="uppercase">Заглавные буквы</span>
+          </label>
+
+          <label class="switch">
+            <input type="checkbox" id="numbers" checked />
+            <span class="slider"></span>
+            <span class="label-text" data-i18n="numbers">Цифры</span>
+          </label>
+
+          <label class="switch">
+            <input type="checkbox" id="symbols" checked />
+            <span class="slider"></span>
+            <span class="label-text" data-i18n="symbols">Символы</span>
+          </label>
+
+          <label class="switch">
+            <input type="checkbox" id="exclude-ambiguous" />
+            <span class="slider"></span>
+            <span class="label-text" data-i18n="excludeAmbiguous">Исключить похожие символы (0/O, 1/l)</span>
+          </label>
+
+        </div>
+
+        <div id="password-container">
+
+          <div id="password" class="ym-hide-content" data-empty="true"
+               data-i18n="passwordPlaceholder" aria-live="polite">Нажмите «Сгенерировать»</div>
+
+          <div id="strength-meter" hidden>
+            <div class="strength-track"><div id="strength-bar"></div></div>
+            <p id="strength-text"></p>
+          </div>
+
+          <div class="button-row-tight">
+            <button type="button" class="generate" id="generate-btn" data-i18n="generate">Сгенерировать</button>
+            <button type="button" class="copy"     id="copy-btn"     data-i18n="copy">Копировать</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<section class="article-block">
+  <div class="article-container">
+
+    <h2 id="article-title" data-i18n="articleTitle">Почему важно использовать надёжные пароли</h2>
+
+    <p id="article-p1">
+      В современном цифровом мире ваша безопасность начинается с пароля. Слабые и повторяющиеся пароли — одна из главных причин взломов и утечек данных.
+    </p>
+    <p id="article-p2">
+      Надёжный пароль защищает личную информацию, предотвращает несанкционированный доступ и обеспечивает безопасность ваших аккаунтов.
+    </p>
+    <p id="article-p3">
+      PassForge помогает создавать уникальные, сложные и при этом удобные пароли — генерация идёт локально в браузере, данные никуда не отправляются.
+    </p>
+
+    <h2>Что такое энтропия пароля</h2>
+    <p>
+      Стойкость пароля измеряется не количеством символов и не наличием восклицательного знака, а энтропией — числом бит, показывающим, насколько велико множество паролей, из которого ваш был выбран. Каждый дополнительный бит удваивает работу взломщика.
+    </p>
+    <p>
+      Пароль из 16 символов, включающий строчные и заглавные буквы, цифры и символы, даёт около 104 бит. Шестизначный PIN — всего 20 бит, то есть перебирается мгновенно. Именно поэтому под полем показывается конкретное число, а не абстрактная шкала «слабый — сильный».
+    </p>
+
+    <h2>Случайный или запоминаемый</h2>
+    <p>
+      Случайный набор символов компактнее при той же стойкости, но запомнить его человеку практически невозможно — такие пароли имеет смысл хранить в менеджере паролей. Запоминаемый пароль собирается из отдельных слов: он длиннее, зато его реально удержать в голове, что удобно для мастер-пароля от самого менеджера или для входа в ноутбук.
+    </p>
+    <p>
+      Важное замечание: заменять буквы на похожие символы, превращая «пароль» в «п@р0ль», почти не увеличивает энтропию. Программы подбора знают все такие подстановки. Длина работает намного лучше любых ухищрений.
+    </p>
+
+    <h2>Как всё это работает</h2>
+    <p>
+      Случайные значения берутся из <code>crypto.getRandomValues()</code> — криптографического генератора самого браузера. Обычный <code>Math.random()</code> для паролей непригоден: его внутреннее состояние восстанавливается по нескольким выданным значениям, после чего вычисляется вся последовательность.
+    </p>
+    <p>
+      Вся генерация происходит на вашем устройстве. Сгенерированные пароли не передаются на сервер, не логируются и нигде не сохраняются.
+    </p>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>&copy; 2026 PassForge. Пароли создаются в вашем браузере через Web Crypto API.</p>
+</footer>
+
+<script defer src="/main.js"></script>
+
+</body>
+</html>
