@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- Аналитика (GA4 + Яндекс.Метрика) грузится ТОЛЬКО после согласия в cookie-баннере.
+     Реализация — внизу страницы, перед </body>. До клика «Accept» ни один счётчик
+     не подгружается и куки не ставятся (opt-in, GDPR/ePrivacy). -->
+
 <title>PassForge – Secure Online Password Generator</title>
 
 <meta name="description" content="Generate secure, strong, unique, and memorable passwords instantly. Custom length, symbols, numbers and entropy meter. Free, and generated entirely in your browser." />
@@ -279,35 +283,72 @@
   <p>&copy; 2026 PassForge. Generated in your browser using the Web Crypto API.</p>
 </footer>
 
-<!--
-  ═══════════════════════════════════════════════════════════════════════
-  АНАЛИТИКА
-
-  Прежняя конфигурация Яндекс.Метрики включала webvisor:true. Вебвизор
-  записывает изменения DOM и отправляет их на серверы Яндекса. Сгенерированный
-  пароль попадает в DOM (#password), то есть потенциально уезжал вместе с
-  записью сессии — при том что на странице заявлено обратное.
-
-  Ниже аналитика ОТКЛЮЧЕНА целиком. Выберите один из вариантов:
-
-  ── Вариант A (рекомендуемый): cookieless-аналитика, баннер согласия не нужен,
-     позиционирование «no tracking» остаётся правдой.
-
-     <script defer data-domain="passforge.net" src="https://plausible.io/js/script.js"></script>
-
-     Альтернатива — Cloudflare Web Analytics, бесплатно.
-
-  ── Вариант B: вернуть GA/Метрику. Тогда обязательны:
-       • cookie-баннер с opt-in (домен кипрский → GDPR + ePrivacy);
-       • webvisor:false, clickmap:false;
-       • правка текста «No tracking» в переводах на честный;
-       • класс ym-hide-content на #password (уже проставлен).
-
-     ym(XXXXXXXX, 'init', { webvisor:false, clickmap:false, trackLinks:true, accurateTrackBounce:true });
-  ═══════════════════════════════════════════════════════════════════════
--->
-
 <script defer src="/main.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+  COOKIE CONSENT + аналитика с opt-in (GA4 G-ESG8VKVJJ3 + Яндекс.Метрика 104216514)
+
+  До клика «Accept» НИЧЕГО не грузится и ни одной куки не ставится.
+  Выбор хранится в localStorage ('pf-analytics-consent'), не в куках.
+  Метрика: webvisor:false, clickmap:false — сессии/пароль из DOM не пишутся.
+  ═══════════════════════════════════════════════════════════════════════ -->
+<style>
+  .cc-banner{position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;
+    max-width:640px;margin:0 auto;background:var(--card-bg,#fff);color:var(--text-main,#333);
+    border:1px solid #dfe4ea;border-radius:12px;box-shadow:0 8px 30px rgba(31,42,96,.18);
+    padding:16px 18px;font-family:'Montserrat',system-ui,sans-serif;font-size:14px;line-height:1.5;
+    display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+  .cc-banner[hidden]{display:none}
+  .cc-text{margin:0;flex:1 1 260px}
+  .cc-actions{display:flex;gap:10px;margin-left:auto}
+  .cc-btn{font:inherit;font-weight:600;cursor:pointer;border-radius:8px;padding:9px 18px;
+    border:1px solid transparent;transition:background .15s,border-color .15s,color .15s}
+  .cc-btn-primary{background:var(--primary,#4a69bd);color:#fff}
+  .cc-btn-primary:hover{background:var(--primary-hover,#3c5aa4)}
+  .cc-btn-ghost{background:transparent;color:var(--secondary,#778ca3);border-color:#cfd6df}
+  .cc-btn-ghost:hover{border-color:var(--secondary,#778ca3);color:var(--secondary-hover,#5f6f80)}
+  @media(max-width:520px){.cc-actions{margin-left:0;width:100%}.cc-btn{flex:1}}
+</style>
+<div id="cookie-consent" class="cc-banner" hidden role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <p class="cc-text">We use analytics cookies (Google Analytics &amp; Yandex.Metrica) to understand how the site is used. Passwords you generate are never collected or sent.</p>
+  <div class="cc-actions">
+    <button type="button" id="cc-decline" class="cc-btn cc-btn-ghost">Decline</button>
+    <button type="button" id="cc-accept" class="cc-btn cc-btn-primary">Accept</button>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='pf-analytics-consent', YM_ID=104216514, GA_ID='G-ESG8VKVJJ3', loaded=false;
+  function loadAnalytics(){
+    if(loaded) return; loaded=true;
+    /* Google Analytics 4 */
+    var g=document.createElement('script');
+    g.async=true; g.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
+    document.head.appendChild(g);
+    window.dataLayer=window.dataLayer||[];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date()); gtag('config', GA_ID);
+    /* Yandex.Metrica — webvisor/clickmap OFF */
+    (function(m,e,t,r,i){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for(var j=0;j<e.scripts.length;j++){if(e.scripts[j].src===r){return;}}
+      var k=e.createElement(t),a=e.getElementsByTagName(t)[0];
+      k.async=1;k.src=r;a.parentNode.insertBefore(k,a);
+    })(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id='+YM_ID,'ym');
+    ym(YM_ID,'init',{ssr:true,webvisor:false,clickmap:false,accurateTrackBounce:true,trackLinks:true});
+  }
+  var banner=document.getElementById('cookie-consent');
+  var saved=null; try{saved=localStorage.getItem(KEY);}catch(e){}
+  if(saved==='granted'){ loadAnalytics(); }
+  else if(saved!=='denied'){ banner.hidden=false; }
+  document.getElementById('cc-accept').addEventListener('click',function(){
+    try{localStorage.setItem(KEY,'granted');}catch(e){} banner.hidden=true; loadAnalytics();
+  });
+  document.getElementById('cc-decline').addEventListener('click',function(){
+    try{localStorage.setItem(KEY,'denied');}catch(e){} banner.hidden=true;
+  });
+})();
+</script>
 
 </body>
 </html>
